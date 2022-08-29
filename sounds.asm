@@ -32,8 +32,9 @@ _91bbe:
 
 	.word	$91f8
 	.word	4
-	call	$91be ; routine above
+	call	$91be ; install routine above
 	nop
+
 
 	.word	$813f
 	.word	29
@@ -55,7 +56,7 @@ _813fe:
 
 	.word	$967a
 	.word	34
-	; Jumping sound / B   DDDDDDdddd
+	; Jumping sound
 	ld		a,%10000000
 	out		($20),a		; set chan a freq   dddd = 0000
 	ld		a,($9df9)	; harry y vel
@@ -120,7 +121,16 @@ _813fe:
 	.word	$9823
 	.word	22
 	; imwalkinhere
-	.ds		22
+	ld		a,%10000000
+	out		($20),a
+;	ld		a,b
+	ld		a,1
+	sra		a
+	sra		a
+	out		($20),a
+	ld		a,%10010000
+	out		($20),a
+	.ds		6
 
 
 	.word	$a471
