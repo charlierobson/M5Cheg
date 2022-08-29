@@ -6,6 +6,7 @@
 *.bak
 *.bin
 *.lock
+*.html
 
 # User-specific files
 *.rsuser

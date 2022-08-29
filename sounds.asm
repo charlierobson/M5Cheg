@@ -9,17 +9,16 @@ _91be:
 
 	ld		a,%10000000	; set pitch
 	out		($20),a
-	ld		a,16
+	ld		a,8
 	out		($20),a
 
 -:
 	LD		A,($91f1)
 	inc		A
 	LD		($91f1),A
-	cp		$1f
+	cp		$0f
 	ret		z
 
-	sra		a
 	or		%10010000
 	out		($20),a
 
