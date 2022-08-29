@@ -85,6 +85,9 @@ _813fe:
 	out		($20),a
 	jr		$+25
 
+	sla		a
+	inc		a
+	ld		b,a
 	ld		a,$0e
 	sub		b
 	or		%10010000
@@ -93,11 +96,12 @@ _813fe:
 	out		($20),a
 	ret
 
-	.ds		11,0
+	.ds		7,0
 
 
-	.word	$97cf
-	.word	3
+	.word	$97cd
+	.word	5
+	ld		a,$7
 	ld		($815b),a	; collect sound envelope index
 
 	.word	$97d5
@@ -109,28 +113,29 @@ _813fe:
 	ld		($815b),a
 
 
-	.word	$97e7
-	.word	7
+	.word	$97e6
+	.word	8
 	call	$97b6
-	nop
-	nop
-	nop
-	nop
+	.ds		5
 
+	.word	$97fa
+	.word	2
+	ld		b,$20		; ladder climb pitch
+
+	.word	$97ff
+	.word	2
+	ld		b,$30		; walkin' pitch
 
 	.word	$9823
 	.word	22
 	; imwalkinhere
 	ld		a,%10000000
 	out		($20),a
-;	ld		a,b
-	ld		a,1
-	sra		a
-	sra		a
+	ld		a,b
 	out		($20),a
 	ld		a,%10010000
 	out		($20),a
-	.ds		6
+	.ds		11
 
 
 	.word	$a471
@@ -140,7 +145,19 @@ _813fe:
 
 	.word	$a48c
 	.word	6
+	; life lost trill
 	.byte	$11,$12,$14,$16,$fe,$18
+
+	; re-arranged life lost music
+	; .word	$a479
+	; .word	26
+	; .byte	B8h,  Eh, 9Ch,  Bh
+	; .byte	B8h, 13h, 9Ch, 11h
+	; .byte	B8h, 10h, 9Ch,  Ch
+	; .byte	B8h, 13h, 9Ch, 15h
+	; .byte	F0h,  Ch, 89h, 11h
+	; .byte	12h, 14h, 16h, feh
+	; .byte	18h, FFh
 
 
 	.word	$a4a4
@@ -235,7 +252,15 @@ _a4eee:
 	.word	55
 	; sound setup
 	ret
-	.ds		54
+
+	; instruction screen patch
+	call	$9969
+	.byte	16h, 13h,  1h
+	.asc	"SORD M5 PORT BY CHARLIE ROBSON"
+;           "DUCK GETS OUT AFTER LEVEL NINE"
+	.byte	$ff
+	jp		$827a
+	.ds		54-40
 
 
 	.word	$a569

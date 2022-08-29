@@ -4,21 +4,16 @@
 	.include hstable.asm
 	.include sounds.asm
 
-	.word	$801a	; kill title tune
-	.word	3
-	nop
-	nop
-	nop
+	; .word	$801a	; kill title tune
+	; .word	3
+	; nop
+	; nop
+	; nop
 
-	; .word	$a3a9
-	; .word	1
-	; ret
 
-	.word	$8021	; don't alter stack
+	.word	$8021	; don't alter stack, instead clear 'music aborted' flag
 	.word	3
-	nop
-	nop
-	nop
+	ld		($815a),a
 
 	.word	$805A
 	.word	4
@@ -155,3 +150,42 @@ _9a52s:
 ;_jumpMask
 	.byte	$30,$40,$81
 _9a52e:
+
+
+	; instruction screen
+
+	.word	$8176
+	.word	1
+	.byte	3
+
+	.word	$819a
+	.word	1
+	.byte	5
+
+	.word	$81bc
+	.word	1
+	.byte	7
+
+	.word	$81dd
+	.word	1
+	.byte	9
+
+	.word	$81ff
+	.word	1
+	.byte	11
+
+	.word	$8220
+	.word	1
+	.byte	13
+
+	.word	$8241
+	.word	1
+	.byte	15
+
+	.word	$8262
+	.word	1
+	.byte	22
+
+	.word	$8274
+	.word	3
+	call	$a533 ; add my vandalism
