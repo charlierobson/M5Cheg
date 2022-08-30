@@ -1,5 +1,6 @@
 	.word	$91bb
 	.word	_91bbe-_91bbs
+	; bonus dinger
 _91bbs:
 	jp		$91f2
 

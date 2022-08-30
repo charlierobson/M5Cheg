@@ -31,7 +31,7 @@ start:
 
 	ld		hl,chuk
 	ld		de,$8000
-	ld		bc,15800
+	ld		bc,16080
 	ldir
 
 	ld		hl,regs

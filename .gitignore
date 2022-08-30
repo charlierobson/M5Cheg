@@ -8,6 +8,7 @@
 *.lock
 *.html
 *.zip
+tmp*
 
 # User-specific files
 *.rsuser

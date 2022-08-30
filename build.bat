@@ -8,4 +8,4 @@ brass m5cheg.asm m5cheg.bin -l m5cheg.html
 copy /y m5cheg.bin C:\Users\robsonc\gh\mamebuild\roms\m5_cart\cheg\
 copy /y m5cheg.bin "C:\Users\robsonc\gh\m5multi\cart-binaries\sirmorris\Chuckie Egg.bin"
 del /q CHUCKIEPADDED.BIN
-del /q  chuckie.patched.bin
+rem del /q  chuckie.patched.bin

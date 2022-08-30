@@ -117,6 +117,12 @@ _9a49s:
 	nop
 _9a49e:
 
+
+	.word	$9304
+	.word	9
+	.asc	"  PLAYER "
+
+
 	.word	$873a	; hiscore entry, del key
 	.word	2
 	CP		$8a
@@ -186,8 +192,10 @@ _9a52e:
 	call	$a533 ; add my vandalism
 
 
+vBONUSPAUSE = $8158
 fTITLEMUSIC = $8159
-fMUSICABORT = $815a
+fMUSICABORT = $815a ; last address, add new vars before this
+
 fGETKEY = $876f
 fPLAYTITLEMUSIC = $a3a9
 
@@ -228,4 +236,54 @@ fPLAYTITLEMUSIC = $a3a9
 	xor		a
 	ld		(fMUSICABORT),a
 	ld		(fTITLEMUSIC),a
+	ret
+
+
+	.word	$8e98	; updateBonus
+	.word	9
+	call	$bdb0
+	.ds		6
+
+	.word	$bdb0
+	.word	23
+	ld		a,($9f06)
+	or		a
+	jr		z,{+}
+	cp		5
+	jr		z,{+}
+	pop		hl
+	ret
++:	ld		a,(vBONUSPAUSE)		; anything to count down?
+	or		a
+	ret		z
+	dec		a
+	ld		(vBONUSPAUSE),a
+	pop		hl
+	ret
+
+
+	.word	$812c
+	.word	6
+	call	$bdc8	; setup
+	jp		$9105	; start game
+
+	.word	$bdc8
+	.word	5
+	xor		a
+	ld		(vBONUSPAUSE),a
+	ret
+
+
+	.word	$9727	; check seed pickup
+	.word	4
+	call	$bdd0
+	nop
+
+	.word	$bdd0
+	.word	13
+	ld		(ix+$21),0
+	cp		$0d
+	ret		c
+	ld		hl,vBONUSPAUSE
+	ld		(hl),3
 	ret
