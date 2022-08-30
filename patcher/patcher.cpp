@@ -39,6 +39,10 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
+	patch.seekg(0, patch.end);
+	int bytesRemaining = (int)patch.tellg();
+	patch.seekg(0, patch.beg);
+
 	auto targetData = vector<unsigned char>(istreambuf_iterator<char>(target), istreambuf_iterator<char>());
 
 	auto base = readWord(patch);
@@ -48,6 +52,15 @@ int main(int argc, char** argv) {
 		auto offset = readWord(patch);
 		auto len = readWord(patch);
 		auto patchBytes = readBytes(patch, len);
+
+		bytesRemaining -= len;
+
+		if (len > 32767 || bytesRemaining < 0 || offset < base || (size_t)(len + offset - base) >= targetData.size()) {
+			cout << "**** Problem detected with patch file ****" << endl;
+			patch.close();
+			target.close();
+			return 1;
+		}
 
 		auto delta = offset - base;
 
@@ -71,6 +84,8 @@ int main(int argc, char** argv) {
 
 	dest.write((char*)targetData.data(), targetData.size());
 	dest.close();
+
+	cout << endl << "All patches applied successfully." << endl << endl;
 
 	return 0;
 }
