@@ -61,12 +61,10 @@ _813fe:
 	out		($20),a		; set chan a freq   dddd = 0000
 	ld		a,($9df9)	; harry y vel
 	add		a,4
-	sla		a
-	sla		a
 	out		($20),a		; upper part of freq   DDDDDD
 	ld		a,%10010000
 	out		($20),a		; set chan a vol
-	.ds		34-19
+	.ds		34-15
 
 
 	.word	$97a0
