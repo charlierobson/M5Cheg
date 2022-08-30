@@ -4,16 +4,11 @@
 	.include hstable.asm
 	.include sounds.asm
 
-	; .word	$801a	; kill title tune
-	; .word	3
-	; nop
-	; nop
-	; nop
+fPRINTSTRING = $9969
 
-
-	.word	$8021	; don't alter stack, instead clear 'music aborted' flag
+	.word	$8021	; don't alter stack
 	.word	3
-	ld		($815a),a
+	.ds		3
 
 	.word	$805A
 	.word	4
@@ -152,8 +147,8 @@ _9a52s:
 _9a52e:
 
 
-	; instruction screen
-
+	; instruction screen, move text up a line
+	;
 	.word	$8176
 	.word	1
 	.byte	3
@@ -189,3 +184,48 @@ _9a52e:
 	.word	$8274
 	.word	3
 	call	$a533 ; add my vandalism
+
+
+fTITLEMUSIC = $8159
+fMUSICABORT = $815a
+fGETKEY = $876f
+fPLAYTITLEMUSIC = $a3a9
+
+
+	.word	$a413	; patch _playSeg
+	.word	3
+	call	$bd80
+
+	.word	$bd80
+	.word	21
+	; skip music patch, CALL from a413
+	pop		hl				; ditch return value, returns to PlayIrritatingTune
+	ld		a,(fTITLEMUSIC)	; ff if title music, else 0
+	ld		b,a
+	ld		a,(fMUSICABORT)	; nz if music should be skipped
+	and		b
+	ret		nz
+	push	hl				; return to playseg
+	call	fGETKEY
+	ld		(fMUSICABORT),a
+	ld		a,(ix+0)
+	ret
+	; 21 bytes
+
+
+	.word	$801a	; patch playtitlemusic
+	.word	3
+	call	$bd98
+
+	.word	$bd98
+	.word	19
+	; setup abort flags and play title music
+	xor		a
+	ld		(fMUSICABORT),a
+	cpl
+	ld		(fTITLEMUSIC),a
+	call	fPLAYTITLEMUSIC
+	xor		a
+	ld		(fMUSICABORT),a
+	ld		(fTITLEMUSIC),a
+	ret

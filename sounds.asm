@@ -99,18 +99,20 @@ _813fe:
 	.ds		7,0
 
 
+vCOLLECTENV = $815b
+
 	.word	$97cd
 	.word	5
 	ld		a,$7
-	ld		($815b),a	; collect sound envelope index
+	ld		(vCOLLECTENV),a	; collect sound envelope index
 
 	.word	$97d5
 	.word	3
-	ld		a,($815b)
+	ld		a,(vCOLLECTENV)
 
 	.word	$97dc
 	.word	3
-	ld		($815b),a
+	ld		(vCOLLECTENV),a
 
 
 	.word	$97e6
@@ -252,15 +254,13 @@ _a4eee:
 	.word	55
 	; sound setup
 	ret
-
 	; instruction screen patch
-	call	$9969
+	call	fPRINTSTRING
 	.byte	16h, 13h,  1h
-	.asc	"SORD M5 PORT BY CHARLIE ROBSON"
-;           "DUCK GETS OUT AFTER LEVEL NINE"
+	.asc	"SORD M5 PORT BY CHARLIE ROBSON" ; 30 chars
 	.byte	$ff
 	jp		$827a
-	.ds		54-40
+	.ds		55-41
 
 
 	.word	$a569

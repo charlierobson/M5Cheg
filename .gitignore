@@ -7,6 +7,7 @@
 *.bin
 *.lock
 *.html
+*.zip
 
 # User-specific files
 *.rsuser

@@ -1,6 +1,6 @@
 	.org $87ec
 
-PrintString .equ $9969
+fPRINTSTRING = $9969
 
 ; original special keys
 
@@ -65,102 +65,102 @@ specialKeyNames:
     .word	knPadRight		;	0x8f
 
 knReturn:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"RETURN"
 	.byte	$FF
 	RET
 
 knSpace:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"SPACE"
 	.byte	$FF
 	RET
 
 knLShift:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"L"
 	.byte	$FF
 	jr		_shift
 knRShift:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"R"
 	.byte	$FF
 _shift:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"-SHIFT"
 	.byte	$FF
 	ret
 
 knFunc:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"FUNC"
 	.byte	$FF
 	RET
 
 knCtrl:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"CTRL"
 	.byte	$FF
 	RET
 
 knUnderscore:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"UNDERSCORE"
 	.byte	$FF
 	RET
 
 knCaret:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"CARET"
 	.byte	$FF
 	RET
 
 knRiSquare:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"R SQ. BR."
 	.byte	$FF
 	RET
 
 knLeSquare:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"L SQ. BR."
 	.byte	$FF
 	RET
 
 knBackSlash:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"BACK"
 	.byte	$FF
 	jr		_slash
 
 knFwdSlash:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"FWD"
 	.byte	$FF
 
 _slash
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	" SLASH"
 	.byte	$FF
 	RET
 
 knPadDown:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"PAD D"
 	.byte	$FF
 	RET
 knPadLeft:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"PAD L"
 	.byte	$FF
 	RET
 knPadUp:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"PAD U"
 	.byte	$FF
 	RET
 knPadRight:
-	CALL	PrintString
+	CALL	fPRINTSTRING
 	.asc	"PAD R"
 	.byte	$FF
 	RET
