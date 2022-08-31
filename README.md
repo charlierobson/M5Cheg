@@ -2,11 +2,13 @@
 
 ### Porting Tatung Einstein Chuckie Egg to the Sord M5.
 
-Well this was a thing I didn't think I'd end up doing but here we are. To be honest I thought it was going to be much harder than it turned out to be but that was just luck. A lot of features of the code were totally flukey and helped the port immensely. I chose Chuckie Egg ('CE') as a target because:
+Well this was a thing I didn't think I'd end up doing but here we are. To be honest I thought it was going to be much harder than it turned out to be but that was just luck. A lot of features of the code were reasonably portable and helped the port immensely. 
+
+I chose Chuckie Egg ('CE') as a target because:
 
 * I like it.
 * Every system should have it.
-* It's how I rank retro computer users. You're either a hacker or a chuckieegger.
+* It's how I rank retro computer users. You're either a chuckiehacker or a chuckieegger.
 
 I chose the Tatung version as the source because, most significantly, the two systems share a big part of their architecture. Both Z80 and TMS99 video chips. I momentarily thought the M5 had an AY sound chip as well but I have a stupid short memory and didn't remember the absolute ball-ache I had converting the sound when I ported my own game BiggOil. D'oh.
 
@@ -20,9 +22,12 @@ There were a number of milestones which I had in my mind as roughly thus:
 * Make the game respond to you
 * Do the sound if I could be arsed
 
-Another one popped into the list as I went along and this was to fix any original bugs that irritated me.
+Another one popped into the list as I went along:
+
+* fix any original bugs that irritate me
 
 Tools what I thought I'd need:
+
 * A copy of MAME built locally in Visual Studio so I can hack it to output helpful information
 * All the docs:
   * Z80 programmer's manual
@@ -30,12 +35,12 @@ Tools what I thought I'd need:
   * AY programmer's guide
   * M5 hardware manual (I wish!) had to make do with schematics
   * Einstein hardware manual.
-* A working knowledge of Ghidra
+* A working knowledge of a reverse engineering tool, most probably Ghidra
 * A hex editor
 * An assembler
 * Some way of patching the source binary
 
-I hadn't used Ghidra before, and all the binary patching solutions I was aware of didn't fit my requirements so there's another task. Building MAME is something I'm used to so that shouldn't be hard, right..?
+I hadn't used Ghidra before, and all the binary patching solutions I was aware of didn't fit my requirements so there's a couple of tasks right there. Building MAME is something I've done beforeso that shouldn't be hard, right..?
 
 But I'm getting ahead of myself. We should see what we're up against. 
 
@@ -43,7 +48,9 @@ But I'm getting ahead of myself. We should see what we're up against.
 
 Get MAME, all the rommy bits required to run Tatung and Sord, and the CE disk image. Tatung DOS is based off CPM and loads binaries at $100. So start MAME in debug mode, and when the debugger appears G 100 and see what happens. What happened was _very_ interesting. The game is relocated to $8000 and executed there. This was intially puzzling. There's no obvious immediate need for this behaviour. I thought maybe the game was assembled in place with a memory resident assembler but it the reason will reveal itself later.
 
-In some ways this is good news. The M5Multi cart has RAM in the upper 32k memory region so it should run there, all being well, but MAME is a different problem as the default M5 device only has the standard 4K. Looking at the slot devices there's talk of a 32k RAM cart but for the life of me I can't make it work. So a hack it is.
+This is great news. The M5Multi cart has RAM in the upper 32k memory region so it should run there, all being well. I probably won't have to do any relocating which has saved around 9732% of work! 🎉 🎉
+
+MAME is a different problem as the default M5 device only has the standard 4K. Looking at the slot devices there's talk of a 32k RAM cart but for the life of me I can't make it work. So a hack it is.
 
 **Yak shave 1: Make M5 look like an M5 with an M5Multi.**
 * Get MAME source. Check out latest from GitHub.
@@ -54,17 +61,19 @@ In some ways this is good news. The M5Multi cart has RAM in the upper 32k memory
 * Build with VS. Whoosh! Very quick. Multi core support - perhaps that could be enabled for other build too.
 * A million errors! All related to some sound thing. No related info online.
 * Start hacking stuff out of MAME hoping it's not needed and won't be a rabbit hole.
-* It was a rabbit hole. Eventually enough is hacked off though, and the thing builds.
+* It's a rabbit hole. Eventually enough is hacked off though, and the thing builds.
 
-Right. Now let's see how to add 32K RAM. The M5 source is littered with hacks for some weird homebrew setup that a (presumably) small number of people had but is of little interest to me. Hack most of that out leaving a bare M5 driver, apart from the code that puts 32k of RAM in the upper region. I'm trivialising this, it was one of the hardest parts of this process and took best part of a couple of hours to get working.
+Right. Now let's see how to add 32K RAM. The M5 source is littered with hacks for some weird homebrew setup that a (presumably) small number of people had but is of little interest to me. Hack most of that out leaving a bare M5 driver, apart from the code that puts 32k of RAM in the upper region. I'm trivialising this, it was one of the hardest parts of this process and took best part of a couple of hours to get working. Personally I don't think this machine hack belongs in mainstream MAME (look at the fuss that gets made about hacked software) but that's just my opinion. I digress.
 
-With the `chuckie.com` file extracted from the disk image, using the [EinyDSK tools](https://github.com/charlierobson/einsdein-vitamins/tree/master/utils/dsktool) what I wrote, I lopped off the relocator code and saved the raw binary. The resulting code blob is less than 16k in size, which is great news for fitting into a 16K ROM image. I have some experience of putting M5 ROM carts together so I re-purposed the startup ASM code from BiggOil. I included the CE binary in the code along with a relocator and assembled it to the roms folder in the MAME directory, to make running it easier. After a load of faffing about I added an entry in the MAME M5 ROMS XML so I could load the cart from the commandline. While these things take effort to set up they are important to reduce friction in the future.
+With the `chuckie.com` file extracted from the disk image, using the [EinyDSK tools](https://github.com/charlierobson/einsdein-vitamins/tree/master/utils/dsktool) what I wrote, I lopped off the relocator code and saved the raw binary. The resulting code blob is less than 16k in size, which is great news for fitting into a 16K ROM image. I have some experience of putting M5 ROM carts together so I re-purposed the startup ASM code from BiggOil. I included the CE binary in the code along with a relocator and assembled it to the roms folder in the MAME directory, to make running it easier. After a load of faffing about I added an entry in the hash/m5_cart.xml file, so I could load the cart from the commandline. While these things take effort to set up they are important to reduce friction in the future.
 
 Speaking of which, an important part of the porting process will be a reproducible 'build pipeline' so that was next. This is a grandiose way of saying I wrote a batch file to automate the build ha ha. [BUILD.BAT](https://github.com/charlierobson/M5Cheg/blob/master/build.bat). That'll do.
 
 I love an assembler called [BRASS](https://benryves.com/bin/brass/), it's free, cross platform (via Mono) and works great. I've used it for years. It's TASM compatible - which for whatever reason is something people still use despite it not being free 🤷‍♂️. Being able to reproduce the ROM from it constituent parts with a single command is important. It will save a lot of pain.
 
-Right. We have a ROM cart and we can load it into MAME. Let's go. Let's G 8000 to be precise.
+Right. We have a ROM cart and we can load it into MAME. I set up the VS project of MAME to run with appropriate command line parameters which means I can hit a single key and have MAME running with everything loaded as I need it: `m5p -debug -uimodekey HOME -cart1 cheg`. The cart1 parameter is a mapping to the cart I ~hacked up~ defined earlier.
+
+OK, run up MAME and let's go. Let's G 8000 to be precise.
 
 #### Step 1. See something on screen.
 
