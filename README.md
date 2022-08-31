@@ -163,3 +163,21 @@ About this time I was wondering why the original author didn't use sprites. I su
 The game is looking pretty sweet now. And I can't put it off any longer - it's sound time.
 
 #### Do the sound.
+
+The AY and SN are very different chips. The AY has some envelope generation capability and a wide pitch range with the ability to mix in noise to each channel. The SN has 4 basic voices, one of which is noise. The AY has 8 registers to tweak, accessed through 2 different IO ports. The SN is similar except register accesses are all through the same port.
+
+There are literally dozens of different sound chip IO requests being made, My heart is sinking at this point. I thought I'd start off with the title tune as it seemed to be fairly localised and uses a very simple player. Most sound routines work in a similar way. Data defines register changes over time. Looking at the player code it looked something like this:
+
+* Get note number
+* Map note to sound chip pitch value
+* Play tone
+* Apply a volume envelope over time
+* Repeat
+
+There's more to it in practice, but not much more - the tune is made up of segments and the main player plays these in sequence. Luckily all the sounds are played on a single channel.
+
+Step one was to work out where the tones were being produced and simply map the AY method to the YM. With this done I was hearing a tune but it was all over the place. The tone table would need re-calculating so it's off to the Yak barber again.
+
+**Yak shave 4: Calculate some tone tables**
+
+For this I searched the internet for a spreadsheet of note -> frequency data. Fairly specific, sure, but it's the internet and anything that can exist will. With sheet in hand I worked out the sums required to map frequency to the required tone values for the chip. After much pain I worked out the required data values and how they should be represented for the YM. This took way longer than it should have, the best part of an afternoon. But when the irritating tune appeared I was glad to hear it. One of the major irritations is the off-key trill at the end of the tune - a glissando which ends on not even a real note and offends common decency. With some faffing about that's now fixed too.
