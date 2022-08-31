@@ -122,3 +122,8 @@ Most keyboard routines have a matrix of keycap characters. For keycaps like SHIF
 I'll assume that you don't expect that this all worked first time most of the time. It certainly didn't. But this keyboard stuff is a relatively well understood area for me so this time it did.
 
 From the title screen I could now press keys and have the game respond. I could get to instructions, the key remapper let me remap, and I could start the game. And what do you know, it worked! I was playing Chuckie Egg on the Sord! The graphics for the ducks (ostriches? hens? abominations?) were messed up, which led me onto another yakventure later, but it ran.
+
+I noticed that during keyboard remapping I wasn't allowed to use A or H as control keys. This was tested in Einychuk, and yes it's a source bug. It's because you hold Esc + A or H during the game to abort or hold, respectively. The remap code checks which keys are already assigned and doesn't let you use them for multiple inputs, even though initially the game has QAOP as the character control keys so it's evidently not a problem. The A & H keys aren't printed anywhere unlike the directions which are shown at the start screen. So nuking them in the key remap table by assigning an unused key code is perfectly fine and fixes that.
+
+Most ports won't be this simple. I've been _super_ lucky that the source program 'fits' into the destination memory map and doesn't do anything super funky.
+
