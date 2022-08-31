@@ -56,21 +56,21 @@ MAME is a different problem as the default M5 device only has the standard 4K. L
 **Yak shave 1: Make M5 look like an M5 with an M5Multi.**
 * Get MAME source. Check out latest from GitHub.
 * Get tools.
-* Compile it. Man alive this cross platform build is slow. Stop that, it's silly.
+* Compile it. Man alive this cross platform build is slow.
 * Build MAME with only the M5 and Einstein drivers. That's better but still super slow.
 * Do the steps needed to generate the VS project files.
-* Build with VS. Whoosh! Very quick. Multi core support - perhaps that could be enabled for other build too.
+* Build with VS. Whoosh! Very quick. Multi core support - perhaps that could be enabled for other build too?
 * A million errors! All related to some sound thing. No related info online.
-* Start hacking stuff out of MAME hoping it's not needed and won't be a rabbit hole.
+* Start hacking erroring stuff out of MAME hoping it's not needed and won't be a rabbit hole.
 * It's a rabbit hole. Eventually enough is hacked off though, and the thing builds.
 
 Right. Now let's see how to add 32K RAM. The M5 source is littered with hacks for some weird homebrew setup that a (presumably) small number of people had but is of little interest to me. Hack most of that out leaving a bare M5 driver, apart from the code that puts 32k of RAM in the upper region. I'm trivialising this, it was one of the hardest parts of this process and took best part of a couple of hours to get working. Personally I don't think this machine hack belongs in mainstream MAME (look at the fuss that gets made about hacked software) but that's just my opinion. I digress.
 
 With the `chuckie.com` file extracted from the disk image, using the [EinyDSK tools](https://github.com/charlierobson/einsdein-vitamins/tree/master/utils/dsktool) what I wrote, I lopped off the relocator code and saved the raw binary. The resulting code blob is less than 16k in size, which is great news for fitting into a 16K ROM image. I have some experience of putting M5 ROM carts together so I re-purposed the startup ASM code from BiggOil. I included the CE binary in the code along with a relocator and assembled it to the roms folder in the MAME directory, to make running it easier. After a load of faffing about I added an entry in the hash/m5_cart.xml file, so I could load the cart from the commandline. While these things take effort to set up they are important to reduce friction in the future.
 
-Speaking of which, an important part of the porting process will be a reproducible 'build pipeline' so that was next. This is a grandiose way of saying I wrote a batch file to automate the build ha ha. [BUILD.BAT](https://github.com/charlierobson/M5Cheg/blob/master/build.bat). That'll do.
+Speaking of which being able to reproduce the ROM from it constituent parts with a single command is important. It will save a lot of pain. An important part of this will be a 'build pipeline' so that was next. This is a grandiose way of saying I wrote a batch file to automate the build steps ha ha. [BUILD.BAT](https://github.com/charlierobson/M5Cheg/blob/master/build.bat). That'll do. Initially it only had one line in but as things progress it will become swole.
 
-I love an assembler called [BRASS](https://benryves.com/bin/brass/), it's free, cross platform (via Mono) and works great. I've used it for years. It's TASM compatible - which for whatever reason is something people still use despite it not being free 🤷‍♂️. Being able to reproduce the ROM from it constituent parts with a single command is important. It will save a lot of pain.
+I love an assembler called [BRASS](https://benryves.com/bin/brass/), it's free, cross platform (via Mono) and works great. I've used it for years. It's TASM compatible - which for whatever reason is something people still use despite it not being free 🤷‍♂️. 
 
 Right. We have a ROM cart and we can load it into MAME. I set up the VS project of MAME to run with appropriate command line parameters which means I can hit a single key and have MAME running with everything loaded as I need it: `m5p -debug -uimodekey HOME -cart1 cheg`. The cart1 parameter is a mapping to the cart I ~hacked up~ defined earlier.
 
