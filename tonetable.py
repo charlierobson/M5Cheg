@@ -1,3 +1,6 @@
+# frequencies roughly mapping to the BBC micro's SOUND values, where 52/4 = middle C (261.63hz)
+# see BBC user guide
+
 freqs = [123.47, 130.81, 138.59, 146.83, 155.56, 164.81, 174.61,
 		185, 196, 207.65, 220, 233.08, 246.94, 261.63, 277.18,
 		293.66, 311.13, 329.63, 349.23, 369.99, 392, 415.3, 440,
