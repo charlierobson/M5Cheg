@@ -27,7 +27,7 @@ Another one popped into the list as I went along:
 
 * Fix any original bugs that irritate me.
 
-Tools what I thought I'd need:
+Tools I thought I'd need:
 
 * A copy of MAME built locally in Visual Studio so I can hack it to output helpful information
 * All the docs:
@@ -66,7 +66,7 @@ MAME is a different problem as the default M5 device only has the standard 4K. L
 
 Right. Now let's see how to add 32K RAM. The M5 source is littered with hacks for some weird homebrew setup that a (presumably) small number of people had but is of little interest to me. Hack most of that out leaving a bare M5 driver, apart from the code that puts 32k of RAM in the upper region. I'm trivialising this, it was one of the hardest parts of this process and took best part of a couple of hours to get working. Personally I don't think this machine hack belongs in mainstream MAME (look at the fuss that gets made about hacked software) but that's just my opinion. I digress.
 
-With the `chuckie.com` file extracted from the disk image, using the [EinyDSK tools](https://github.com/charlierobson/einsdein-vitamins/tree/master/utils/dsktool) what I wrote, I lopped off the relocator code and saved the raw binary. The resulting code blob is less than 16k in size, which is great news for fitting into a 16K ROM image. I have some experience of putting M5 ROM carts together so I re-purposed the startup ASM code from BiggOil.
+With the `chuckie.com` file extracted from the disk image, using the [EinyDSK tools](https://github.com/charlierobson/einsdein-vitamins/tree/master/utils/dsktool) that I wrote, I lopped off the relocator code and saved the raw binary. The resulting code blob is less than 16k in size, which is great news for fitting into a 16K ROM image. I have some experience of putting M5 ROM carts together so I re-purposed the startup ASM code from BiggOil.
 
 I love an assembler called [BRASS](https://benryves.com/bin/brass/), it's free, cross platform (via Mono) and works great. I've used it for years. It's TASM compatible - which for whatever reason is something people still use despite it not being free 🤷‍♂️. Rant over.
 
