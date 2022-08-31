@@ -101,7 +101,7 @@ I needed something with as few steps as possible so came up with the following p
 * Define a process for making patches in the assembler
 * Apply this patch to the binary
 
-A simple data structure defining the patch offset and length followed by the patch bytes themselves seemed like a fine idea. So I wrote a program that would take the source binary, patch binary and output the patched data.
+A simple data structure defining the patch offset and length followed by the patch bytes themselves seemed like a fine idea. So I wrote [a program](https://github.com/charlierobson/M5Cheg/tree/master/patcher) that would take the source binary, patch binary and output the patched data.
 
 Patches are developed in assembler. I thought this was ideal because, well, most of the stuff I'd be patching was code so you may as well use the code-generating program to make the whole file. Patches look like this:
 ```
@@ -113,7 +113,7 @@ Patches are developed in assembler. I thought this was ideal because, well, most
 ``` 
 Simple!
 
-The assembler I used wasn't able to define start addresses for each patch block, so I had to use some tricks and a lot of mental math to calculate relative addresses but this is easy if tedious. One thing I wish I'd done is work out a way to verify the correctness of each block because I got the byte count wrong _a lot_. It was, again, easy to correct but tedious. I considered having each patch block in its own separate asm file but many patches refer to one another so that would have been it own special pain point. I may revisit this in future. This was a useful technique for a couple of unrelated patches that required generating offset tables though.
+BRASS isn't (as far as I know) able to define start addresses for each patch block, so I had to use some tricks and a lot of mental math to calculate relative addresses but this is easy enough, if tedious. One thing I wish I'd done is work out a way to verify the correctness of each block because I got the byte count wrong _a lot_. It was, again, easy to correct but tedious. I considered having each patch block in its own separate asm file and then include all the binary output in one master asm file but many patches refer to one another so that would have been it own special pain point. I may revisit this in future. This was a useful technique for a couple of unrelated patches that required generating offset tables though, e.g. [key cap remapping](https://github.com/charlierobson/M5Cheg/blob/master/keycaptable.asm).
 
 With the ability to patch the binary off I went! First thing was implementing keyboard reading code that 1. worked and 2. fitted in the address space of the code that I was overwriting. For the most part this was OK, but some patches were larger than the space available so required finding a freed-up block of memory and relocating functionality.
 
