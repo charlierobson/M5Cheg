@@ -176,10 +176,10 @@ There are literally dozens of different sound chip IO requests being made, My he
 
 There's more to it in practice, but not much more - the tune is made up of segments and the main player plays these in sequence. Luckily all the sounds are played on a single channel.
 
-Step one was to work out where the tones were being produced and simply map the AY method to the YM. With this done I was hearing a tune but it was all over the place. The tone table would need re-calculating so it's off to the Yak barber again.
+Step one was to work out where the tones were being produced and simply map the AY register update methods to the YM. With this done I was hearing a tune but it was all over the place. The tone table would need re-calculating so it's off to the Yak barber again.
 
 **Yak shave 4: Calculate some tone tables**
 
-For this I searched the internet for a spreadsheet of note -> frequency data. Fairly specific, sure, but it's the internet and anything that can exist will. With sheet in hand I worked out the sums required to map frequency to the required tone values for the chip. However this was proving difficult to export from the sheet so I got to [practice my Python](https://github.com/charlierobson/M5Cheg/blob/master/tonetable.py). Comparing a table that I also generated for the AY to the one in the code I saw - happily - that the note number -> tone table mapping was close enough to not worry about it. Which is a relief.
+For this I searched the internet for a spreadsheet of note -> frequency data. Fairly specific, sure, but it's the internet and anything that can exist [will](https://docs.google.com/spreadsheets/d/1pA92TLTJJFiT3A1J9LcigpUevuYeDMujeMDCEPJ63hc/edit). With sheet in hand I worked out the sums required to map frequency to the required tone values for the chip. However this was proving difficult to export from the sheet so I got to [practice my Python](https://github.com/charlierobson/M5Cheg/blob/master/tonetable.py). Comparing a table that I also generated for the AY to the one in the code I saw - happily - that the note number -> tone table mapping was close enough to not worry about it. Which is a relief.
 
 With the newly generated tone tables in place we get tunes! Sound effects are going to need to be understood a bit more as they're associated with game state.
