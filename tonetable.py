@@ -14,5 +14,5 @@ clock=clock_pal
 
 for freq in freqs:
 	val = int((clock/32) / freq)
-
+	# tone value is 10 bits, first byte is low 4 bits and second is upper 6.
 	print("   .byte $" + hex(val & 15) + ", $" + hex(val >> 4))
