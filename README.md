@@ -29,7 +29,7 @@ Another one popped into the list as I went along:
 
 Tools I thought I'd need:
 
-* A copy of MAME built locally in Visual Studio so I can hack it to output helpful information
+* A copy of MAME built locally so I can hack it to output helpful information
 * All the docs:
   * Z80 programmer's manual
   * TMS programmer's guide
@@ -51,7 +51,7 @@ Get MAME, all the rommy bits required to run Tatung and Sord, and the CE disk im
 
 This is great news. The M5Multi cart has RAM in the upper 32k memory region so it should run there, all being well. I probably won't have to do any relocating which has saved around 9732% of work! 🎉 🎉
 
-MAME is a different problem as the default M5 device only has the standard 4K. Looking at the slot devices there's talk of a 32k RAM cart but for the life of me I can't make it work. So a hack it is.
+MAME is a different problem as the default M5 device only has the standard 4K. Looking at the slot devices there's talk of a 32k RAM cart but for the life of me I can't make it work. So a hack it is. I could have done all this with the standard non-VS build but I imagined that I'd need to use a debugger on MAME itself at some point, and the VS debugger is supreme (fight me), so VS build it is. It turned out I didn't really need to but eh. Hindsight. Coulda saved some pain.
 
 **Yak shave 1: Make M5 look like an M5 with an M5Multi.**
 * Get MAME source. Check out latest from GitHub.
