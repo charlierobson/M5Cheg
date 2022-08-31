@@ -43,7 +43,7 @@ Get MAME, all the rommy bits required to run Tatung and Sord, and the CE disk im
 
 In some ways this is good news. The M5Multi cart has RAM in the upper 32k memory region so it should run there, all being well, but MAME is a different problem as the default M5 device only has the standard 4K. Looking at the slot devices there's talk of a 32k RAM cart but for the life of me I can't make it work. So a hack it is.
 
-Yak task 1: Make M5 look like an M5 with an M5Multi. 
+**Yak task 1: Make M5 look like an M5 with an M5Multi. 
 * Get MAME source. Check out latest from GitHub.
 * Get tools.
 * Compile it. Man alive this cross platform build is slow. Stop that, it's silly.
@@ -64,10 +64,22 @@ I love an assembler called BRASS, it's free, cross platform (via Mono) and works
 
 Right. We have a ROM cart and we can load it into MAME. Let's go. Let's G 8000 to e precise.
 
-#### Step 1. See something.
+#### Step 1. See something on screen.
 
 The Einstein has its VDP on hardware ports $08 and $09. The M5 is $10 and $11. Easiest thing to do is a translation in the emulator. So off to the Z80 emulator code in MAME and find the IN and OUT handler. These take the IO address as a parameter, so a quick re-mapping in the routine will have something on screen.
 
 Running the code I see the screen update, but it's junk. I need to know what's happening so off to the VDP code in MAME. There is already some debug code in there so that was enabled and the M5 and Einstein start-ups were run. It showed that the M5 was setting up a different display mode to the Einstein. Nothing surprising there, so I added code to the cart start-up to configure the VPD identically to that of the Einstein.
 
 Re-running the cart showed the title screen! It's important to have some wins and this was a big one. It made me think I could do this. I initially thought that the program had crashed after displaying the title but it was just playing the title screen music to itself, happily writing to the wrong sound chip registers, natch, and when that finished I was excited to see the scrolling text appear, indicating that the code was still running happily! It's waiting for a key, so let's do that next.
+
+#### Step 2. Make the game respond to you.
+
+The M5 reads its keyboard in a somewhat similar way to the Einstein, but not quite. Like most machines of that day the keyboard is a matrix which gets scanned on a row-by-row basis, examining each row for any bits indicating a key press. The Einstein's matrix is connected via the PSG's IO capability wheras the M5 is directly mapped to an IO address. We need to know where this input biz is happening so logging to the rescue again. I decided to log all IN and OUT operations. I can't be logging blindly so I added code to build a set of addresses and only log the address of the instruction doing the IO when it's first encountered. I filtered on the IO address also, so I was only seeing the addresses I was interested in at any one moment.
+
+With a limited set of addresses showing some IN action I could start putting breakpoints in the debugger and seeing what they were doing. This will show something but it will only get you so far as code typically jumps around and keeping track of addresses in your head might be OK for rain man but I find it hard. So it's time to bring in the big guns.
+
+**Yak task 2: Get to grips with Ghidra 
+
+
+
+
