@@ -18,13 +18,14 @@ This doc is going to take the form of a monologue that accompanies the source re
 
 There were a number of milestones which I had in my mind as roughly thus:
 
-* See something on screen
-* Make the game respond to you
-* Do the sound if I could be arsed
+* See something on screen.
+* Make the game respond to you.
+* Do the sound.
+* Tidy up some rough edges.
 
 Another one popped into the list as I went along:
 
-* fix any original bugs that irritate me
+* Fix any original bugs that irritate me.
 
 Tools what I thought I'd need:
 
@@ -134,5 +135,21 @@ From the title screen I could now press keys and have the game respond. I could 
 
 I noticed that during keyboard remapping I wasn't allowed to use A or H as control keys. This was tested in Einychuk, and yes it's a source bug. It's because you hold Esc + A or H during the game to abort or hold, respectively. The remap code checks which keys are already assigned and doesn't let you use them for multiple inputs, even though initially the game has QAOP as the character control keys so it's evidently not a problem. The A & H keys aren't printed anywhere unlike the directions which are shown at the start screen. So nuking them in the key remap table by assigning an unused key code is perfectly fine and fixes that.
 
-Most ports won't be this simple. I've been _super_ lucky that the source program 'fits' into the destination memory map and doesn't do anything super funky.
+Most ports won't be this simple. To reiterate again I've been _super_ lucky that the source program 'fits' into the destination memory map and doesn't do anything super funky. I'm doing a little dance now. BRB.
+
+So with the game essentially playable I have some to realise that the sound will be less fun to work on. So I make an executive decision to ignore it for now and do some tidying up and look at the glitchy hen/ostrich/abomination bug.
+
+Tidying up first I think I'd like my name in there. I changed the data in the high score table to say something like:
+```
+PORTED TO  1000
+SORD M5    1000
+BY CHARLIE 1000
+2022       1000
+...
+```
+
+While I thought I deserved the credit I also didn't like the vandalised look of it. I hate seeing people's names plastered over game hacks, etc. In a cracktro, sure. But in game, naah. Leave it alone. So with that in mind I just replaced the top entry of the high score table with my own name, and a score of 2022. I thought that was suitably subtle and was feeling much better about not being a hypocrite. I did however change the instruction screen by moving all the text up a line and adding `SORD M5 PORT BY CHARLIE ROBSON` in there right before the `press a key` text. Conscience salved I girded my loins for the graphics bug.
+
+At this point in time I decided to map memory accesses by the code, to see if anything was writing data where it shouldn't - which on the M5 would be anywhere that wasn't program binary. $0000-$7fff and $c000-$ffff inclusive. With watchpoints set up in the MAME debugger I ran the game and just as the main game screen was shown I hit a watchpoint. And another and another. RAM was being written from $0000-$4000 and the offending code was duplicating the screen buffer. Which makes sense. The TMS VDP has its own memory that you access via IO ports. You can't read or write it directly. So the game is building the character based screen image from the level description data and then copying the resulting 'map' back into RAM where it can be read and written at will. This explained the corrupted henostribominations. The ostriches are character mapped so the game takes the background tile and renders a new tile that contains the he.. bird image and pops it back. BUT the character tile peeked from the map was random garbage because, well, ROM. 
+
 
