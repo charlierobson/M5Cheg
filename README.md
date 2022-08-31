@@ -43,18 +43,18 @@ Get MAME, all the rommy bits required to run Tatung and Sord, and the CE disk im
 
 In some ways this is good news. The M5Multi cart has RAM in the upper 32k memory region so it should run there, all being well, but MAME is a different problem as the default M5 device only has the standard 4K. Looking at the slot devices there's talk of a 32k RAM cart but for the life of me I can't make it work. So a hack it is.
 
-**Yak task 1: Make M5 look like an M5 with an M5Multi. 
+**Yak shave 1: Make M5 look like an M5 with an M5Multi.**
 * Get MAME source. Check out latest from GitHub.
 * Get tools.
 * Compile it. Man alive this cross platform build is slow. Stop that, it's silly.
-* Build MAME with only the M5 and Einstein drivers.
+* Build MAME with only the M5 and Einstein drivers. That's better but still super slow.
 * Do the steps needed to generate the VS project files.
-* Build with VS.
-* A million errors! All related to some sound thing. Nothing related online.
-* Start hacking stuff out of MAME hoping it's not needed.
-* Eventually enough is hacked off and the thing builds.
+* Build with VS. Whoosh! Very quick. Multi core support - perhaps that could be enabled for other build too.
+* A million errors! All related to some sound thing. No related info online.
+* Start hacking stuff out of MAME hoping it's not needed and won't be a rabbit hole.
+* It was a small rabbit hole. Eventually enough is hacked off though, and the thing builds.
 
-Right. Now it builds let's see how to add 32K RAM. The M5 source is littered with hacks for some weird homebrew setup that a number of people had but is of little interest to me. Hack most of that out leaving a bare M5 driver, apart from the code that puts 32k of RAM in the upper region. I'm trivialising this, it was one of the hardest parts of this process and took best part of a day to get working.
+Right. Now it builds let's see how to add 32K RAM. The M5 source is littered with hacks for some weird homebrew setup that a (presumably) small number of people had but is of little interest to me. Hack most of that out leaving a bare M5 driver, apart from the code that puts 32k of RAM in the upper region. I'm trivialising this, it was one of the hardest parts of this process and took best part of a day to get working.
 
 With the Chuckie.com file extracted from the disk image, using the [EinyDSK tools](https://github.com/charlierobson/einsdein-vitamins/tree/master/utils/dsktool) what I wrote, I lopped off the relocator code and saved the raw binary. The resulting code blob is less than 16k in size, which is great news for fitting into a 16K ROM image. I have some experience of putting M5 ROM carts together so I re-purposed the startup ASM code from BiggOil. I included the CE binary in the code along with a relocator and assembled it to the roms folder in the MAME directory, to make running it easier. I added an entry in the MAME M5 ROMS XML so I could load the cart from the commandline. While these things take effort to set up they are important to reduce friction in the future.
 
@@ -78,7 +78,23 @@ The M5 reads its keyboard in a somewhat similar way to the Einstein, but not qui
 
 With a limited set of addresses showing some IN action I could start putting breakpoints in the debugger and seeing what they were doing. This will show something but it will only get you so far as code typically jumps around and keeping track of addresses in your head might be OK for rain man but I find it hard. So it's time to bring in the big guns.
 
-**Yak task 2: Get to grips with Ghidra 
+**Yak shave 2: Get to grips with Ghidra**
+
+Ghidra is a reverse engineering tool. Free, unlike all its competitors, and the work of the NSA so I'm on their list now. I fumbled around for a while but to be honest far less than I was imagining. With the Einy Chuckie binary loaded it was a matter of selecting the correct CPU architecture (Z80 is supported, as are most processors) and a couple of other parameters such as the loading offset. After a bit more fumbling I found the decompile option which went off and produced both an assembler listing and C code that approximated the code flow. That was useless however, as it's pure brute force and assembler programming is, as you should know, a work of art in many cases. We all have our little tricks and oddities, and any large scale assembler project inevitably develops quirks. Vestigial code. Self modifying sections. Routines that never return. Data sprinkled liberally thoughout code. On top of this every authour has their own unique fingerprint, accent if you will.
+
+Ghidra allows you to comment the assembler, jump around the code using hyperlinks, see where code and data are referenced from (SO useful!) and rename the auto-generated labels once you start making sense of things. I love it. I couldn't have done this without it.
+
+Focussing on the input routine I could add labels and gradually untangle the flow. In fact I spent a couple of hours jumping around the place identifying functions and variables. It was like a brilliant puzzle and the time just flew. I highly recommend this as a rainy day activity. After a while I'd found the main game loop, the intro screen, keyboard remapper and a bunch of other stuff.
+
+A lot of the screen update is done with a custom print routine. There are a defined set of control codes for positioning and colouring the text. It's pretty nice. And it makes changing things easy too ;)
+
+Focus you fakeyboard. Back to the input. Most input is based around a couple of ideas. Get the raw bits from the matrix. Provide mechanism for mapping these to a keycap representation.
+
+
+
+
+
+
 
 
 
