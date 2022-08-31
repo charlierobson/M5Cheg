@@ -98,24 +98,22 @@ Ghidra is a reverse engineering tool. Free, unlike all its competitors, and the 
 
 Ghidra allows you to comment the assembler, jump around the code using hyperlinks, see where code and data are referenced from (SO useful!) and rename the auto-generated labels once you start making sense of things. I love it. I couldn't have done this without it. Most commands have a single key shortcut and once you've learned these navigating and documenting is a brisk breeze.
 
-Focussing on the input routine I could add labels and gradually untangle the flow. In fact I spent a couple of hours jumping around the place identifying unrelated functions and variables. It was like a brilliant puzzle and the time just flew. I highly recommend this as a rainy day activity. After a while I'd found the main game loop, the intro screen, keyboard remapper, music player, and a bunch of other stuff.
+Focussing on the input routine I could add labels and gradually untangle the flow. In fact I spent a couple of hours jumping around the place identifying unrelated functions and variables. It was like a brilliant puzzle and the time just flew. I highly recommend this as a rainy day activity. After a while I'd found the main game loop, the intro screen, keyboard remapper, music player, and a bunch of other stuff. A lot of the screen update is done with a custom print-string routine. There are a defined set of control codes for positioning and colouring the text. It's pretty nice. And it makes changing things easy too ;)
 
-A lot of the screen update is done with a custom print routine. There are a defined set of control codes for positioning and colouring the text. It's pretty nice. And it makes changing things easy too ;)
+Back to the task at hand. Most microcomputer game input is based around a couple of ideas: get the raw bits from the matrix, provide mechanism for mapping these to a keycap representation.
 
-Focus you fakeyboard. Back to the input task at hand. Most microcomputer game input is based around a couple of ideas. Get the raw bits from the matrix. Provide mechanism for mapping these to a keycap representation.
-
-With the previous 2 parts of the code identified I had to work out how to change them. It would require a lot of poking of bytes and like I said before, we need to be able to reproduce this at any time from the ground up so no hex editing for me. We need to patch binaries. Search internet. Waste time: felt like hours. All the patching tools I found were too heavyweight. I have a very specific workflow here - replace bytes in-place.
+With the parts of the code identified I had to work out how to change them. It would require a lot of poking of bytes and like I said before, we need to be able to reproduce this at any time from the ground up so no hex editing for me. We need to patch binaries. Search internet. Waste time. All the patching tools I found were too heavyweight. I have a very specific workflow here - replace bytes in-place.
 
 **Yak shave 3: Write a patcher**
 
-I needed something with as few steps as possible so came up with the following plan.
+I needed something with as few steps as possible so came up with the following plan:
 
-* Define a process for making patches in the assembler
-* Apply this patch to the binary
+* Make patch file in the assembler.
+* Apply this patch to the binary.
 
-A simple data structure defining the patch offset and length followed by the patch bytes themselves seemed like a fine idea. So I wrote [a program](https://github.com/charlierobson/M5Cheg/tree/master/patcher) that would take the source binary, patch binary and output the patched data.
+A simple data structure defining the patch offset and length followed by the patch bytes themselves seemed like a fine idea. So I wrote [a program](https://github.com/charlierobson/M5Cheg/tree/master/patcher) that would take the source binary, apply the patch binary and output the patched binary.
 
-Patches are developed in assembler. I thought this was ideal because, well, most of the stuff I'd be patching was code so you may as well use the code-generating program to make the whole file. Patches look like this:
+Like I said the patches are developed in assembler. I thought this was ideal because, well, most of the stuff I'd be patching was code so you may as well use the code-generating program to make the whole file. Patches look like this:
 ```
  .word <offset>
  .word <num bytes>
@@ -125,27 +123,29 @@ Patches are developed in assembler. I thought this was ideal because, well, most
 ``` 
 Simple!
 
-The first patches were for the VDP IO addresses. Armed with the logging of IO accesses that I put in earlier I could define the patch data. With those in place the remapping hack can be removed from MAME. It's useful to add a warning in the emulator when a wrong IO address is hit in case any remappings were missed. Some were so that was a good investment.
+The first patches were for the VDP IO addresses. Armed with the logging of IO accesses that I put in earlier I could define the [patch data](https://github.com/charlierobson/M5Cheg/blob/master/innout.asm) to modify them. With this in place the remapping hack can be removed from MAME. It's useful to add a warning in the emulator when a wrong IO address is accessed in case any remappings were missed. Some were, so that was a good investment.
 
-BRASS isn't (as far as I know) able to define start addresses for each patch block so I had to use some tricks and a lot of mental math to calculate relative addresses, but this is easy enough if tedious. One thing I wish I'd done is work out a way to verify the correctness of each block because I got the byte count wrong _a lot_. It was, again, easy enough to correct but tedious. I considered having each patch block in its own separate asm file and then include all the binary output in one master asm file but many patches refer to one another so that would have been its own special pain point. This was a useful technique for a couple of patches that required generating offset tables though, e.g. [key cap remapping](https://github.com/charlierobson/M5Cheg/blob/master/keycaptable.asm) which was assembled separately then included as a binary.
+BRASS isn't (as far as I know) able to define start addresses for each patch block so I had to use some tricks and a lot of mental math to calculate relative addresses, but this is easy enough if tedious. I'm sure I could come up with something if I thought hard enough. 
 
-With the ability to patch the binary off I went! First thing was implementing keyboard reading code that 1. worked and 2. fitted in the address space of the code that I was overwriting. For the most part this was OK, but some patches were larger than the space available so required finding a freed-up block of memory and relocating functionality.
+One thing I wish I'd done is work out a way to verify the correctness of each block because I got the byte count wrong _a lot_. It was, again, easy enough to correct but tedious. I considered having every patch block in its own separate asm file and then include all the binary output in one master asm file but many patches refer to one another so that would have been its own special pain. It was, however, a useful technique for a couple of patches that required generating offset tables, e.g. [key cap remapping](https://github.com/charlierobson/M5Cheg/blob/master/keycaptable.asm) which was assembled separately then included as a blob.
 
-Most keyboard routines have a matrix of keycap characters. For keycaps like SHIFT and ENTER there will be some code that represents the extended string. Setting the high bit of the character is a common technique, with the low bits representing an index into a table of addresses pointing to the string data. This was worked out but I had to compromise as the M5 has a lot more keys with non-ascii representations so I had to be creative with descriptions and techniques such as a common string for things like SHIFT.
+With the ability to patch the binary off I went! First thing was implementing keyboard reading code that fitted in the address space of the code that I was overwriting. For the most part this was OK, but some patches were larger than the space available to them so required finding a freed-up block of memory and relocating functions appropriately.
 
-I'll assume that you don't expect that this all worked first time most of the time. It certainly didn't. But this keyboard stuff is a relatively well understood area for me so this time it did.
+Most keyboard routines have a map of codes to keycap characters. For keycaps like SHIFT and ENTER there will be some extended value that represents the string. Setting the high bit of the character code is a common technique, with the low bits representing an index into a table of addresses pointing to the string data. I had to compromise on my chosen strings as the M5 has a lot more keys with extended representations so I had to be creative with descriptions and use techniques such as having a common string for things like SHIFT, which the M5 has 2 of.
 
 From the title screen I could now press keys and have the game respond. I could get to instructions, the key remapper let me remap, and I could start the game. And what do you know, it worked! I was playing Chuckie Egg on the Sord! The graphics for the ducks (ostriches? hens? abominations?) were messed up, which led me onto another yakventure later, but it ran.
 
-I noticed that during keyboard remapping I wasn't allowed to use A or H as control keys. This was tested in Einychuk, and yes it's a source bug. It's because you hold Esc + A or H during the game to abort or hold, respectively. The remap code checks which keys are already assigned and doesn't let you use them for multiple inputs, even though initially the game has QAOP as the character control keys so it's evidently not a problem. The A & H keys aren't printed anywhere unlike the directions which are shown at the start screen. So nuking them in the key remap table by assigning an unused key code is perfectly fine and fixes that.
+I'll assume that you don't believe that this all worked first time most of the time. It certainly didn't. It was a learning process.
+
+I noticed that during keyboard remapping I wasn't allowed to use A or H as movement keys. This was tested in Einychuk, and yes it's a bug there too. It's because you can hold Esc + A or H during the game to abort or hold, respectively. The remap code checks which keys are already assigned and doesn't let you use them for multiple inputs, even though initially the game has QAOP as the character control keys so it's evidently not a problem. The Esc-keys aren't printed anywhere unlike the directions which are shown at the start screen. So nuking them in the key remap table by assigning an unused key code is perfectly fine and fixes that.
 
 Most ports won't be this simple. To reiterate again I've been _super_ lucky that the source program 'fits' into the destination memory map and doesn't do anything super funky. I'm doing a little dance now. BRB.
 
-So with the game essentially playable I have some to realise that the sound will be less fun to work on. So I make an executive decision to ignore it for now and do some tidying up and look at the glitchy hen/ostrich/abomination bug.
+So with the game essentially playable I have come to realise that the sound will be less than fun to work on. So I make an executive decision to ignore it for now and do some tidying up and look at the glitchy hen/ostrich/abomination bug.
 
 #### Tidy up some rough edges.
 
-Tidying up first I think I'd like my name in there. I changed the data in the high score table to say something like:
+First off I think I'd like my name in there. I changed the data in the high score table to say something like:
 ```
 PORTED TO  1000
 SORD M5    1000
