@@ -12,9 +12,9 @@ I chose Chuckie Egg ('CE') as a target because:
 
 I chose the Tatung version as the source because, most significantly, the two systems share a big part of their architecture. Both use Z80 and TMS99 video chips. I momentarily thought the M5 had an AY sound chip as well but I have a stupid short memory and didn't remember the absolute ball-ache I had converting the sound when I ported my own game BiggOil. D'oh.
 
-So, porting. TL;DR: Modify MAME to output interesting info, understand enough of the source program using Ghidra/MAME debugger, patch the binary until it works. There you go, you can now go and port something! Porting is fun. It's also pretty brain scrambling at times but it's one of those things you just have to persevere with. I'm not going to make this a beginners guide. I won't be explaining basic concepts, and it would take forever to go hard on detail so mostly I'm not going to. Sorry.
+So, porting. TL;DR: Modify an emulator to output interesting info, understand enough of the program using debugging and reverse engineering, and patch the binary until it works. There you go, you are now fully equipped to port something! Porting is fun. It's also pretty brain scrambling at times but it's one of those things you just have to persevere with. I'm not going to make this a beginners guide. I won't be explaining basic concepts, and it would take forever to go hard on detail so mostly I'm not going to. Sorry.
 
-This doc is going to take the form of a monologue that accompanies the source repo. I'll link to files where you can see what I'm talking about. You can unpick detail from the source, like I did for the code. It'll be fun!
+This doc is going to take the form of a monologue that accompanies [the source repo](https://github.com/charlierobson/M5Cheg/). I'll link to files where you can see what I'm talking about. You can unpick detail from the source, like I did for the code. It'll be fun!
 
 There were a number of milestones which I had in my mind as roughly thus:
 
