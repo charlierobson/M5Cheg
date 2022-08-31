@@ -139,6 +139,8 @@ Most ports won't be this simple. To reiterate again I've been _super_ lucky that
 
 So with the game essentially playable I have some to realise that the sound will be less fun to work on. So I make an executive decision to ignore it for now and do some tidying up and look at the glitchy hen/ostrich/abomination bug.
 
+#### Tidy up some rough edges.
+
 Tidying up first I think I'd like my name in there. I changed the data in the high score table to say something like:
 ```
 PORTED TO  1000
@@ -150,6 +152,12 @@ BY CHARLIE 1000
 
 While I thought I deserved the credit I also didn't like the vandalised look of it. I hate seeing people's names plastered over game hacks, etc. In a cracktro, sure. But in game, naah. Leave it alone. So with that in mind I just replaced the top entry of the high score table with my own name, and a score of 2022. I thought that was suitably subtle and was feeling much better about not being a hypocrite. I did however change the instruction screen by moving all the text up a line and adding `SORD M5 PORT BY CHARLIE ROBSON` in there right before the `press a key` text. Conscience salved I girded my loins for the graphics bug.
 
-At this point in time I decided to map memory accesses by the code, to see if anything was writing data where it shouldn't - which on the M5 would be anywhere that wasn't program binary. $0000-$7fff and $c000-$ffff inclusive. With watchpoints set up in the MAME debugger I ran the game and just as the main game screen was shown I hit a watchpoint. And another and another. RAM was being written from $0000-$4000 and the offending code was duplicating the screen buffer. Which makes sense. The TMS VDP has its own memory that you access via IO ports. You can't read or write it directly. So the game is building the character based screen image from the level description data and then copying the resulting 'map' back into RAM where it can be read and written at will. This explained the corrupted henostribominations. The ostriches are character mapped so the game takes the background tile and renders a new tile that contains the he.. bird image and pops it back. BUT the character tile peeked from the map was random garbage because, well, ROM. 
+At this point in time I decided to map memory accesses by the code, to see if anything was writing data where it shouldn't - which on the M5 would be anywhere that wasn't program binary. $0000-$7fff and $c000-$ffff inclusive. With watchpoints set up in the MAME debugger I ran the game and just as the main game screen was shown I hit a watchpoint. And another and another. RAM was being written from $0000-$4000 and the offending code was duplicating the screen buffer. Aha, which makes sense. The TMS VDP has its own memory that you access via IO ports. You can't read or write it directly.
 
+The game is building the character based screen image from the level description data and then copying the resulting 'map' back into RAM where it can be read and written at will. This explained the corrupted henostribominations. The enemies are character mapped so the game takes the background tile and renders a new tile that contains the heno.. bird image and pops it back into screen memory. BUT the character tile peeked from the map was random garbage because, well, ROM.
 
+I'd have to move the screen copy and luckily I have $c000-$cfff so I just had to check if it was free by running with watchpoints there. And it was. So everywhere that the offscreen map was accessed got a patch. It wasn't trivial as the screen access addresses in vram mapped directly to the offscreen RAM copy. So any address that accessed RAM would have to have its top 2 bits set temporarily. Luckily there weren't too many places this happened and with this fix in place we had ungarbled enemies.
+
+The game is looking pretty sweet now. And I can't put it off any longer - it's sound time.
+
+#### Do the sound.
