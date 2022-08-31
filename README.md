@@ -30,6 +30,7 @@ Tools what I thought I'd need:
   * Einstein hardware manual.
 * A working knowledge of Ghidra
 * A hex editor
+* An assembler
 * Some way of patching the source binary
 
 I hadn't used Ghidra before, and all the binary patching solutions I was aware of didn't fit my requirements so there's another task. Building MAME is something I'm used to so that shouldn't be hard, right..?
@@ -55,11 +56,18 @@ Yak task 1: Make M5 look like an M5 with an M5Multi.
 
 Right. Now it builds let's see how to add 32K RAM. The M5 source is littered with hacks for some weird homebrew setup that a number of people had but is of little interest to me. Hack most of that out leaving a bare M5 driver, apart from the code that puts 32k of RAM in the upper region. I'm trivialising this, it was one of the hardest parts of this process and took best part of a day to get working.
 
-With the Chuckie.com file extracted from the disk image, using the [EinyDSK tools](https://github.com/charlierobson/einsdein-vitamins/tree/master/utils/dsktool) that I wrote, I lopped off the relocator code and saved the raw binary. It's less than 16k in size, which is great news for fitting into a 16K ROM image. I have some experience of putting M5 ROM carts together so I re-purposed the startup ASM code from BiggOil. I included the CE binary in the cart ASM code along with a relocator and assembled it to the roms folder in the MAME directory to make running it easier. I added an entry in the MAME M5 ROMS XML so I could load the cart from the commandline.
+With the Chuckie.com file extracted from the disk image, using the [EinyDSK tools](https://github.com/charlierobson/einsdein-vitamins/tree/master/utils/dsktool) what I wrote, I lopped off the relocator code and saved the raw binary. The resulting code blob is less than 16k in size, which is great news for fitting into a 16K ROM image. I have some experience of putting M5 ROM carts together so I re-purposed the startup ASM code from BiggOil. I included the CE binary in the code along with a relocator and assembled it to the roms folder in the MAME directory, to make running it easier. I added an entry in the MAME M5 ROMS XML so I could load the cart from the commandline. While these things take effort to set up they are important to reduce friction in the future.
 
-Part of the port will be a reproducible 'build pipeline' so that was next. This is a grandiose way of saying I wrote a batch file to automate the build process haha. I love an assembler called BRASS, it's free, cross platform (via Mono) and works great. It's a TASM compatible - which for whatever reason is something people still use despite it not being free 🤷‍♂️ Being able to reproduce the ROM from it constituent parts is important. It will save a lot of pain.
+Speaking of which, an important part of the porting process will be a reproducible 'build pipeline' so that was next. This is a grandiose way of saying I wrote a batch file to automate the build ha ha. 
 
+I love an assembler called BRASS, it's free, cross platform (via Mono) and works great. It's a TASM compatible - which for whatever reason is something people still use despite it not being free 🤷‍♂️ Being able to reproduce the ROM from it constituent parts with a single command is important. It will save a lot of pain.
 
+Right. We have a ROM cart and we can load it into MAME. Let's go. Let's G 8000 to e precise.
 
 #### Step 1. See something.
 
+The Einstein has its VDP on hardware ports $08 and $09. The M5 is $10 and $11. Easiest thing to do is a translation in the emulator. So off to the Z80 emulator code in MAME and find the IN and OUT handler. These take the IO address as a parameter, so a quick re-mapping in the routine will have something on screen.
+
+Running the code I see the screen update, but it's junk. I need to know what's happening so off to the VDP code in MAME. There is already some debug code in there so that was enabled and the M5 and Einstein start-ups were run. It showed that the M5 was setting up a different display mode to the Einstein. Nothing surprising there, so I added code to the cart start-up to configure the VPD identically to that of the Einstein.
+
+Re-running the cart showed the title screen! It's important to have some wins and this was a big one. It made me think I could do this. I initially thought that the program had crashed after displaying the title but it was just playing the title screen music to itself, happily writing to the wrong sound chip registers, natch, and when that finished I was excited to see the scrolling text appear, indicating that the code was still running happily! It's waiting for a key, so let's do that next.
