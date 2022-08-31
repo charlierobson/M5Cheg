@@ -1,5 +1,6 @@
-# frequencies roughly mapping to the BBC micro's SOUND values, where 52/4 = middle C (261.63hz)
-# see BBC user guide
+# frequencies roughly mapping to the BBC micro's SOUND note numbers / 4
+# 53 = middle C (261.63hz), 53 / 4 = index 13.
+# see BBC user guideor this page https://stardot.org.uk/mirrors/www.bbcdocs.com/filebase/library/pubs/musicmasterclass/bbc_mm_01.htm
 
 freqs = [123.47, 130.81, 138.59, 146.83, 155.56, 164.81, 174.61,
 		185, 196, 207.65, 220, 233.08, 246.94, 261.63, 277.18,
