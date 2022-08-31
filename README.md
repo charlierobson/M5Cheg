@@ -10,7 +10,9 @@ Well this was a thing I didn't think I'd end up doing but here we are. To be hon
 
 I chose the Tatung version as the source because, most significantly, the two systems share a big part of their architecture. Both Z80 and TMS99 video chips. I momentarily thought the M5 had an AY sound chip as well but I have a stupid short memory and didn't remember the absolute ball-ache I had converting the sound when I ported my own game BiggOil. D'oh.
 
-So, porting. TL;DR: Modify MAME to output interesting info, understand enough of the source program using Ghidra/MAME debugger, patch the binary until it works. There you go, you can now go and port something! Porting is fun. It's also pretty brain scrambling at times but it's one of those things you just have to persevere with. I'm not going to make this a beginners guide. I won't be explaining basic concepts, sorry.
+So, porting. TL;DR: Modify MAME to output interesting info, understand enough of the source program using Ghidra/MAME debugger, patch the binary until it works. There you go, you can now go and port something! Porting is fun. It's also pretty brain scrambling at times but it's one of those things you just have to persevere with. I'm not going to make this a beginners guide. I won't be explaining basic concepts, and it would take forever to go hard on detail so mostly I'm not going to. Sorry.
+
+This doc is going to take the form of a monologue that accompanies the source repo. I'll link to files where you can see what I'm talking about. You can unpick detail from the source, like I did for the code. It'll be fun!
 
 There were a number of milestones which I had in my mind as roughly thus:
 
@@ -90,12 +92,35 @@ A lot of the screen update is done with a custom print routine. There are a defi
 
 Focus you fakeyboard. Back to the input. Most input is based around a couple of ideas. Get the raw bits from the matrix. Provide mechanism for mapping these to a keycap representation.
 
+With the previous 2 parts of the code identified I had to work out how to change them. It would require a lot of poking and like I said before, we need to be able to reproduce this at any time from the ground up so no hex editing for me. We need to patch binaries. Search internet. Wasted time: 2 hours. All the patching tools I found were too heavyweight. I have a very specific workflow here - replace bytes in-place.
 
+**Yak shave 3: Write a patcher**
 
+I needed something with as few steps as possible so came up with the following plan.
 
+* Define a process for making patches in the assembler
+* Apply this patch to the binary
 
+A simple data structure defining the patch offset and length followed by the patch bytes themselves seemed like a fine idea. So I wrote a program that would take the source binary, patch binary and output the patched data.
 
+Patches are developed in assembler. I thought this was ideal because, well, most of the stuff I'd be patching was code so you may as well use the code-generating program to make the whole file. Patches look like this:
+```
+ .word <offset>
+ .word <num bytes>
+ code/data
+ ...
+ code/data
+``` 
+Simple!
 
+The assembler I used wasn't able to define start addresses for each patch block, so I had to use some tricks and a lot of mental math to calculate relative addresses but this is easy if tedious. One thing I wish I'd done is work out a way to verify the correctness of each block because I got the byte count wrong _a lot_. It was, again, easy to correct but tedious. I considered having each patch block in its own separate asm file but many patches refer to one another so that would have been it own special pain point. I may revisit this in future. For a couple of unrelated patches that required generating offset tables though this was a useful technique.
 
+With the ability to patch the binary off I went! First thing was implementing keyboard reading code that 1. worked and 2. fitted in the address space of the code that I was overwriting. For the most part this was OK, but some patches were larger than the space available so required finding a freed-up block of memory and relocating functionality.
+
+Most keyboard routines have a matrix of keycap characters. For keycaps like SHIFT and ENTER there will be some code that represents the extended string. Setting the high bit of the character is a common technique, with the low bits representing an index into a table of addresses pointing to the string data. This was worked out but I had to compromise as the M5 has a lot more keys with non-ascii representations so I had to be creative with descriptions and providing a common string for things like SHIFT.
+
+I'll assume you don't expect that this stuff worked first time most of the time. It didn't. But this was a relatively well understood area for me so this time it did.
+
+From the title screen I could now press keys and have the game respond. I could get to instructions, the key remapper let me remap, and I could start the game. And what do you know, it worked! I was playing Chuckie Egg on the Sord! The graphics for the ducks (ostriches? hens? abominations?) were messed up , which led me onto another yakventure, but it ran.
 
 
