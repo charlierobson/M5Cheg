@@ -2,7 +2,7 @@
 
 ### Porting Tatung Einstein Chuckie Egg to the Sord M5.
 
-Well this was a thing I didn't think I'd end up doing but here we are. To be honest I thought it was going to be much harder than it turned out to be but that was just luck. A lot of features of the code were reasonably portable and helped the port immensely. 
+Well this was a thing I didn't think I'd end up doing but here we are. To be honest I thought it was going to be much harder than it turned out to be but that was just luck. A lot of features of the code were reasonably portable and that helped immensely. Don't get me wrong - it wasn't easy but it could have been way, way worse.
 
 I chose Chuckie Egg ('CE') as a target because:
 
