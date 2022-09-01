@@ -50,12 +50,15 @@ int main(int argc, char** argv) {
 
 	while (!(patch.peek() == ifstream::traits_type::eof())) {
 		auto offset = readWord(patch);
-		auto len = readWord(patch);
+		auto lenchk = readWord(patch);
+		auto len = lenchk & 0xff;
+		auto chk = (lenchk >> 8) ^ 0xff;
+
 		auto patchBytes = readBytes(patch, len);
 
 		bytesRemaining -= len;
 
-		if (len > 32767 || bytesRemaining < 0 || offset < base || (size_t)(len + offset - base) >= targetData.size()) {
+		if (len != chk || bytesRemaining < 0 || offset < base || (size_t)(len + offset - base) >= targetData.size()) {
 			cout << "**** Problem detected with patch file ****" << endl;
 			patch.close();
 			target.close();

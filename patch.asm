@@ -3,13 +3,12 @@
 ; patch macros.
 ; any unspecified bytes at the end of the block will be filled with 0/NOP
 ;
-.define PATCH(x, n)		.relocate x - 4 \ .word x \ .word n \  .endrelocate \ .relocate x
+.define PATCH(x, n)		.relocate x - 4 \ .word x \ .byte n \ .byte (n ^ $ff) \ .endrelocate \ .relocate x
 .define ENDPATCH(x, n)	.ds n - ($-x) \ .if ($-x) > n \ .fail "invalid patch, too big: ",($-x)," > ",n \ .endif \ .endrelocate
 
 fPRINTSTRING = $9969
 
 .include innout.asm
-.include hstable.asm
 .include sounds.asm
 .include keycaptable.asm
 
@@ -121,6 +120,13 @@ ENDPATCH($8262, 1)
 PATCH($8274, 3)
 	call	instructionVandalism
 ENDPATCH($8274, 3)
+
+; and my hiscore
+PATCH($89dc, 16)
+	.asc	"CHARLIE   "
+	.byte	0,0
+	.byte	2,0,2,2
+ENDPATCH($89dc, 16)
 
 
 vBONUSPAUSE = $8158
