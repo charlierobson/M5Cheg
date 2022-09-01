@@ -1,139 +1,70 @@
 	.word	$8000
 
-	.include innout.asm
-	.include hstable.asm
-	.include sounds.asm
+; patch macros.
+; any unspecified bytes at the end of the block will be filled with 0/NOP
+;
+.define PATCH(x, n)		.relocate x - 4 \ .word x \ .word n \  .endrelocate \ .relocate x
+.define ENDPATCH(x, n)	.ds n - ($-x) \ .if ($-x) > n \ .fail "invalid patch, too big: ",($-x)," > ",n \ .endif \ .endrelocate
 
 fPRINTSTRING = $9969
 
-	.word	$8021	; don't alter stack
-	.word	3
-	.ds		3
+.include innout.asm
+.include hstable.asm
+.include sounds.asm
+.include keycaptable.asm
 
-	.word	$805A
-	.word	4
+
+; don't alter stack. inserts 3 NOPs
+PATCH($8021, 3)
+ENDPATCH($8021, 3)
+
+; change modifier key for in-game abort/pause
+PATCH($805A, 4)
 	.asc	"FUNC"
+ENDPATCH($805A, 4)
 
-	.word	$806D
-	.word	4
+PATCH($806D, 4)
 	.asc	"FUNC"
+ENDPATCH($806D, 4)
 
-	.word	$911d		; stash screen higher up in ram
-	.word	3
+; relocate offscreen map from $0000 -> $c000
+PATCH($911d, 3)
 	ld		hl,$bfff
+ENDPATCH($911d, 3)
 
-	; patch access code to move vram/map shadow -> c000
-
-	.word	$8d53
-	.word	4
+PATCH($8d53, 4)
 	call	$2100
-	nop
+ENDPATCH($8d53, 4)
 
-	.word	$8d9b
-	.word	3
+PATCH($8d9b, 3)
 	call	$2110
+ENDPATCH($8d9b, 3)
 
-	.word	$8db0
-	.word	3
+PATCH($8db0, 3)
 	call	$2110
+ENDPATCH($8db0, 3)
 
-	.word	$9785
-	.word	3
+PATCH($9785, 3)
 	call	$2120
-
-	; readkbrow
-	.word	$8777
-	.word	L8777e-L8777s
-L8777s:
-	LD		E,$30
-nextkeyx:
-	CALL	$9a49
-	JR		NZ,$+2+$0e
-	ADD		HL,BC
-	INC		E
-	BIT		3,E
-	JR		Z,$-9 ; nextkeyx
-	LD		A,0
-	nop
-	nop
-L8777e:
+ENDPATCH($9785, 3)
 
 
-;   7       6       5       4       3       2       1       0    bit
-;-------+-------+-------+-------+-------+-------+-------+-------.
-; RETRN | SPACE |  ---  |  ---  |R.SHIFT|L.SHIFT| FUNC  | CTRL  | 30
-;-------+-------+-------+-------+-------+-------+-------+-------+
-;   8   |   7   |   6   |   5   |   4   |   3   |   2   |   1   | 31
-;-------+-------+-------+-------+-------+-------+-------+-------+
-;   I   |   U   |   Y   |   T   |   R   |   E   |   W   |   Q   | 32
-;-------+-------+-------+-------+-------+-------+-------+-------+
-;   K   |   J   |   H   |   G   |   F   |   D   |   S   |   A   | 33
-;-------+-------+-------+-------+-------+-------+-------+-------+
-;   ,   |   M   |   N   |   B   |   V   |   C   |   X   |   Z   | 34
-;-------+-------+-------+-------+-------+-------+-------+-------+
-;   \   |   _   |   /   |   .   |   ^   |   -   |   0   |   9   | 35
-;-------+-------+-------+-------+-------+-------+-------+-------+
-;   ]   |   :   |   ;   |   L   |   [   |   @   |   P   |   O   | 36
-;-------+-------+-------+-------+-------+-------+-------+-------+
-; R.JOY | R.JOY | R.JOY | R.JOY | L.JOY | L.JOY | L.JOY | L.JOY | 37
-;   |   |  <--  |   ^   |  -->  |   |   |  <--  |   ^   |  -->  |
-;   v   |       |   |   |       |   v   |       |   |   |       |
-;-------+-------+-------+-------+-------+-------+-------+-------'
-
-	; key cap map - see keycaptable.asm
-	.word	$8797
-	.word	_8797e-_8797s
-_8797s:
-	.byte	$80,$81,$00,$00,$82,$83,$84,$85
-	.byte	'8','7','6','5','4','3','2','1'
-	.byte	'I','U','Y','T','R','E','W','Q'
-	.byte	'K','J','H','G','F','D','S','A'
-	.byte	',','M','N','B','V','C','X','Z'
-	.byte	$8a,$86,'/','.',$87,'-','0','9'
-	.byte	$88,':',';','L',$89,'@','P','O'
-	.byte	$8c,$8d,$8e,$8f,$8c,$8d,$8e,$8f
-_8797e:
-
-	.word $87ec
-	.word _87ece-_87ecs
-_87ecs:
-	.incbin keycaptable.bin
-_87ece:
-
-	.word $9a40
-	.word _9a40e-_9a40s
-_9a40s:
-	ret
-_9a40e:
-
-	.word $9a49
-	.word _9a49e-_9a49s
-_9a49s:
-	push	bc
-	ld		c,e
-	in		a,(c)
-	pop		bc
-	nop
-	nop
-_9a49e:
-
-
-	.word	$9304
-	.word	9
+PATCH($9304, 9)
 	.asc	"  PLAYER "
+ENDPATCH($9304, 9)
 
 
-	.word	$873a	; hiscore entry, del key
-	.word	2
+; hiscore entry, del key
+PATCH($873a, 2)
 	CP		$8a
+ENDPATCH($873a, 2)
 
-	.word	$873e	; hiscore entry, enter key
-	.word	2
+; hiscore entry, enter key
+PATCH($873e, 2)
 	CP		$80
+ENDPATCH($873e, 2)
 
-	.word	$9a52	; inital key setup
-	.word	_9a52e-_9a52s
-_9a52s:
+PATCH($9a52, 24)
 ;'_esc', ctrl in m5chuk
 	.byte	$30,$02,$84 ; can't use func as game key
 ;_abortMask 'A'
@@ -150,46 +81,46 @@ _9a52s:
 	.byte	$36,$02,'P'
 ;_jumpMask
 	.byte	$30,$40,$81
-_9a52e:
+ENDPATCH($9a52, 24)
 
 
-	; instruction screen, move text up a line
-	;
-	.word	$8176
-	.word	1
+; instruction screen, move text up a line
+PATCH($8176, 1)
 	.byte	3
+ENDPATCH($8176, 1)
 
-	.word	$819a
-	.word	1
+PATCH($819a, 1)
 	.byte	5
+ENDPATCH($819a, 1)
 
-	.word	$81bc
-	.word	1
+PATCH($81bc, 1)
 	.byte	7
+ENDPATCH($81bc, 1)
 
-	.word	$81dd
-	.word	1
+PATCH($81dd, 1)
 	.byte	9
+ENDPATCH($81dd, 1)
 
-	.word	$81ff
-	.word	1
+PATCH($81ff, 1)
 	.byte	11
+ENDPATCH($81ff, 1)
 
-	.word	$8220
-	.word	1
+PATCH($8220, 1)
 	.byte	13
+ENDPATCH($8220, 1)
 
-	.word	$8241
-	.word	1
+PATCH($8241, 1)
 	.byte	15
+ENDPATCH($8241, 1)
 
-	.word	$8262
-	.word	1
+PATCH($8262, 1)
 	.byte	22
+ENDPATCH($8262, 1)
 
-	.word	$8274
-	.word	3
-	call	$a533 ; add my vandalism
+; add my instruction screen tag
+PATCH($8274, 3)
+	call	instructionVandalism
+ENDPATCH($8274, 3)
 
 
 vBONUSPAUSE = $8158
@@ -200,13 +131,13 @@ fGETKEY = $876f
 fPLAYTITLEMUSIC = $a3a9
 
 
-	.word	$a413	; patch _playSeg
-	.word	3
-	call	$bd80
+; patch _playSeg to check abort status
+PATCH($a413,3)
+	call	testSkipMusic
+ENDPATCH($a413,3)
 
-	.word	$bd80
-	.word	21
-	; skip music patch, CALL from a413
+PATCH($bd80, 21)
+testSkipMusic:
 	pop		hl				; ditch return value, returns to PlayIrritatingTune
 	ld		a,(fTITLEMUSIC)	; ff if title music, else 0
 	ld		b,a
@@ -218,16 +149,16 @@ fPLAYTITLEMUSIC = $a3a9
 	ld		(fMUSICABORT),a
 	ld		a,(ix+0)
 	ret
-	; 21 bytes
+ENDPATCH($bd80, 21)
 
 
-	.word	$801a	; patch playtitlemusic
-	.word	3
-	call	$bd98
+; setup abort flags and play title music
+PATCH($801a, 3)
+	call	doPlayTitleMusic
+ENDPATCH($801a, 3)
 
-	.word	$bd98
-	.word	19
-	; setup abort flags and play title music
+PATCH($bd98, 19)
+doPlayTitleMusic:
 	xor		a
 	ld		(fMUSICABORT),a
 	cpl
@@ -237,53 +168,58 @@ fPLAYTITLEMUSIC = $a3a9
 	ld		(fMUSICABORT),a
 	ld		(fTITLEMUSIC),a
 	ret
+ENDPATCH($bd98, 19)
 
 
-	.word	$8e98	; updateBonus
-	.word	9
-	call	$bdb0
-	.ds		6
+; pause bonus countdown when seed picked up
+PATCH($8e98, 9)
+	call	checkBonusPause
+ENDPATCH($8e98, 9)
 
-	.word	$bdb0
-	.word	23
-	ld		a,($9f06)
+PATCH($bdb0, 23)
+checkBonusPause:
+	ld		a,($9f06)			; check for bonus countdown when timer unit 0 or 5
 	or		a
 	jr		z,{+}
 	cp		5
 	jr		z,{+}
 	pop		hl
 	ret
-+:	ld		a,(vBONUSPAUSE)		; anything to count down?
++:	ld		a,(vBONUSPAUSE)		; return to count down if flag not set
 	or		a
 	ret		z
 	dec		a
 	ld		(vBONUSPAUSE),a
-	pop		hl
+	pop		hl					; otherwise don't return to decrement
 	ret
+ENDPATCH($bdb0, 23)
 
 
-	.word	$812c
-	.word	6
-	call	$bdc8	; setup
+; prevent music skip while in game
+PATCH($812c, 6)
+	call	preGameSetup
 	jp		$9105	; start game
+ENDPATCH($812c, 6)
 
-	.word	$bdc8
-	.word	5
+PATCH($bdc8, 5)
+preGameSetup:
 	xor		a
 	ld		(vBONUSPAUSE),a
 	ret
+ENDPATCH($bdc8, 5)
 
 
-	.word	$9727	; check seed pickup
-	.word	4
-	call	$bdd0
-	nop
+; pause bonus countdown when seed picked up
+PATCH($9727, 4)
+	call	bonusPauseIfSeedCollected
+ENDPATCH($9727, 4)
 
-	.word	$bdd0
-	.word	13
+PATCH($bdd0, 13)
+bonusPauseIfSeedCollected:
 	ld		(ix+$21),0
 	cp		$0d
 	ret		c
 	ld		hl,vBONUSPAUSE
 	ld		(hl),3
 	ret
+ENDPATCH($bdd0, 13)

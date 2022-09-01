@@ -2,7 +2,6 @@
 del /q CHUCKIEPADDED.BIN
 copy /B CHUCKIE.BIN + CHUCKIEPAD.BIN CHUCKIEPADDED.BIN
 
-brass keycaptable.asm -l keycaptable.html
 del /q patch.bin
 brass patch.asm -e -l patch.html
 

@@ -1,10 +1,12 @@
-	.word	$91bb
-	.word	_91bbe-_91bbs
-	; bonus dinger
-_91bbs:
+; bonus dinger
+PATCH($91f8, 4)
+	call	doDinger
+ENDPATCH($91f8, 4)
+
+PATCH($91bb, 55)
 	jp		$91f2
 
-_91be:
+doDinger:
 	xor		a
 	ld		($91f1),a	; envelope index
 
@@ -13,7 +15,7 @@ _91be:
 	ld		a,8
 	out		($20),a
 
--:
+dingerLoop:
 	LD		A,($91f1)
 	inc		A
 	LD		($91f1),A
@@ -24,23 +26,14 @@ _91be:
 	out		($20),a
 
 	ld		b,0
-	.db		$10,$fe		; djnz $
-	jr		{-}
-_91bbb:
-	.ds		55-(_91bbb-_91bbs)
-_91bbe:
+dingerDelay:
+	djnz	dingerDelay
+	jr		dingerLoop
+ENDPATCH($91bb, 55)
 
 
-	.word	$91f8
-	.word	4
-	call	$91be ; install routine above
-	nop
-
-
-	.word	$813f
-	.word	29
-	; InitPSG
-_813fs:
+; InitPSG
+PATCH($813f, 29)
 	ld		a,%10011111	; max attenuation
 	out		($20),a
 	ld		a,%10111111
@@ -50,14 +43,11 @@ _813fs:
 	ld		a,%11111111
 	out		($20),a
 	ret
-_813fm:
-	.ds		29-(_813fm-_813fs)
-_813fe:
+ENDPATCH($813f, 29)
 
 
-	.word	$967a
-	.word	34
 	; Jumping sound
+PATCH($967a, 34)
 	ld		a,%10000000
 	out		($20),a		; set chan a freq   dddd = 0000
 	ld		a,($9df9)	; harry y vel
@@ -65,12 +55,11 @@ _813fe:
 	out		($20),a		; upper part of freq   DDDDDD
 	ld		a,%10010000
 	out		($20),a		; set chan a vol
-	.ds		34-15
+ENDPATCH($967a, 34)
 
 
-	.word	$97a0
-	.word	45
 	; pickup thing sound
+PATCH($97a0, 45)
 	ld		a,%10000000
 	out		($20),a
 	ld		a,%00111100
@@ -94,76 +83,61 @@ _813fe:
 	or		%11110000
 	out		($20),a
 	ret
-
-	.ds		7,0
+ENDPATCH($97a0, 45)
 
 
 vCOLLECTENV = $815b
 
-	.word	$97cd
-	.word	5
+PATCH($97cd, 5)
 	ld		a,$7
-	ld		(vCOLLECTENV),a	; collect sound envelope index
-
-	.word	$97d5
-	.word	3
-	ld		a,(vCOLLECTENV)
-
-	.word	$97dc
-	.word	3
 	ld		(vCOLLECTENV),a
+ENDPATCH($97cd, 5)
+
+PATCH($97d5, 3)
+	ld		a,(vCOLLECTENV)
+ENDPATCH($97d5, 3)
+
+PATCH($97dc, 3)
+	ld		(vCOLLECTENV),a
+ENDPATCH($97dc, 3)
 
 
-	.word	$97e6
-	.word	8
+PATCH($97e6, 8)
 	call	$97b6
-	.ds		5
+ENDPATCH($97e6, 8)
 
-	.word	$97fa
-	.word	2
+PATCH($97fa, 2)
 	ld		b,$20		; ladder climb pitch
+ENDPATCH($97fa, 2)
 
-	.word	$97ff
-	.word	2
+PATCH($97ff, 2)
 	ld		b,$30		; walkin' pitch
+ENDPATCH($97ff, 2)
 
-	.word	$9823
-	.word	22
-	; imwalkinhere
+; imwalkinhere
+PATCH($9823, 22)
 	ld		a,%10000000
 	out		($20),a
 	ld		a,b
 	out		($20),a
 	ld		a,%10010000
 	out		($20),a
-	.ds		11
+ENDPATCH($9823, 22)
 
 
-	.word	$a471
-	.word	6
+PATCH($a471, 6)
 	; title screen trill
 	.byte	$11,$12,$14,$16,$fe,$18
+ENDPATCH($a471, 6)
 
-	.word	$a48c
-	.word	6
+PATCH($a48c,  6)
 	; life lost trill
 	.byte	$11,$12,$14,$16,$fe,$18
-
-	; re-arranged life lost music
-	; .word	$a479
-	; .word	26
-	; .byte	B8h,  Eh, 9Ch,  Bh
-	; .byte	B8h, 13h, 9Ch, 11h
-	; .byte	B8h, 10h, 9Ch,  Ch
-	; .byte	B8h, 13h, 9Ch, 15h
-	; .byte	F0h,  Ch, 89h, 11h
-	; .byte	12h, 14h, 16h, feh
-	; .byte	18h, FFh
+ENDPATCH($a48c,  6)
 
 
-	.word	$a4a4
-	.word	_a4a4e-_a4a4s
-_a4a4s:
+; tone table
+PATCH($a4a4, 74)
    .byte $0x1, $0x38	; 0
    .byte $0xf, $0x34
    .byte $0xf, $0x31
@@ -201,13 +175,11 @@ _a4a4s:
    .byte $0xd, $0x7
    .byte $0x6, $0x7
    .byte $0x1, $0x0		; 36 ($24)
-_a4a4e:
+ENDPATCH($a4a4, 74)
 
 
-	.word	$a4ee
-	.word	_a4eee-_a4ees
-	;PlayNote
-_a4ees:
+; PlayNote
+PATCH($a4ee, 25)
 	SLA		a
 	LD 		HL,$a4a4
 	ADD		A,L
@@ -221,51 +193,41 @@ _a4ees:
 	inc		hl
 	ld		a,(hl)
 	out		($20),a
-	nop
-	nop
-	nop
-	nop
-	nop
-_a4eee:
+ENDPATCH($a4ee, 25)
 
 
-	.word	$a50c
-	.word	7
-	; playSample / envelope
+; playSample / envelope
+PATCH($a50c, 7)
 	ld		a,(de)
 	or		%10010000
 	out		($20),a
-	nop
-	nop
+ENDPATCH($a50c, 7)
 
 
-	.word	$a52b
-	; Silence channel A
-	.word	7
+; Silence channel A
+PATCH($a52b, 7)
 	ld		a,%10011111
 	out		($20),a
-	nop
-	nop
-	nop
+ENDPATCH($a52b, 7)
 
 
-	.word	$a532
-	.word	55
-	; sound setup
+; sound setup
+PATCH($a532, 55)
 	ret
-	; instruction screen patch
+
+instructionVandalism:
 	call	fPRINTSTRING
 	.byte	16h, 13h,  1h
 	.asc	"SORD M5 PORT BY CHARLIE ROBSON" ; 30 chars
 	.byte	$ff
 	jp		$827a
-	.ds		55-41
+ENDPATCH($a532, 55)
 
 
-	.word	$a569
-	.word	16
-	; envelope data
+; envelope data
+PATCH($a569, 16)
 	.byte	$08,$00,$00,$00
 	.byte	$00,$00,$00,$00
 	.byte	$01,$01,$01,$02
 	.byte	$03,$06,$0a,$0f
+ENDPATCH($a569, 16)
