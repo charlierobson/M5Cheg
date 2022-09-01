@@ -29,19 +29,19 @@ Another one popped into the list as I went along:
 
 Tools I thought I'd need:
 
-* A copy of MAME built locally so I can hack it to output helpful information
+* A copy of MAME built locally so I can hack it to output helpful information.
 * All the docs:
-  * Z80 programmer's manual
-  * TMS programmer's guide
-  * AY programmer's guide
-  * M5 hardware manual (I wish!) had to make do with schematics
+  * Z80 programmer's manual.
+  * TMS programmer's guide.
+  * AY programmer's guide.
+  * M5 hardware manual (I wish!) had to make do with schematics.
   * Einstein hardware manual.
-* A working knowledge of a reverse engineering tool, most probably Ghidra
-* A hex editor
-* An assembler
-* Some way of patching the source binary
+* A working knowledge of Ghidra, a reverse engineering tool.
+* A hex editor.
+* An assembler.
+* Some way of patching the source binary.
 
-I hadn't used Ghidra before, and all the binary patching solutions I was aware of didn't fit my requirements so there's a couple of tasks right there. Building MAME is something I've done beforeso that shouldn't be hard, right..?
+I hadn't used Ghidra before so that'll be a task. All the binary patching solutions I was aware of don't fit my requirements. Roll my own? Probably. Building MAME is something I've done before so that shouldn't be hard, right..?
 
 But I'm getting ahead of myself. We should see what we're up against. 
 
