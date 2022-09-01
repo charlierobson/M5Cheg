@@ -29,19 +29,19 @@ Another one popped into the list as I went along:
 
 Tools I thought I'd need:
 
-* A copy of MAME built locally so I can hack it to output helpful information
+* A copy of MAME built locally so I can hack it to output helpful information.
 * All the docs:
-  * Z80 programmer's manual
-  * TMS programmer's guide
-  * AY programmer's guide
-  * M5 hardware manual (I wish!) had to make do with schematics
+  * Z80 programmer's manual.
+  * TMS programmer's guide.
+  * AY programmer's guide.
+  * M5 hardware manual (I wish!) had to make do with schematics.
   * Einstein hardware manual.
-* A working knowledge of a reverse engineering tool, most probably Ghidra
-* A hex editor
-* An assembler
-* Some way of patching the source binary
+* A working knowledge of Ghidra, a reverse engineering tool.
+* A hex editor.
+* An assembler.
+* Some way of patching the source binary.
 
-I hadn't used Ghidra before, and all the binary patching solutions I was aware of didn't fit my requirements so there's a couple of tasks right there. Building MAME is something I've done beforeso that shouldn't be hard, right..?
+I hadn't used Ghidra before so that'll be a task. All the binary patching solutions I was aware of don't fit my requirements. Roll my own? Probably. Building MAME is something I've done before so that shouldn't be hard, right..?
 
 But I'm getting ahead of myself. We should see what we're up against. 
 
@@ -116,20 +116,19 @@ A simple data structure defining the patch offset and length followed by the pat
 Like I said the patches are developed in assembler. I thought this was ideal because, well, most of the stuff I'd be patching was code so you may as well use the code-generating program to make the whole file. Patches look like this:
 ```
  .word <offset>
- .word <num bytes>
+ .byte <num bytes>
+ .byte <num bytes> xor $ff
  code/data
  ...
  code/data
 ``` 
-Simple!
+Simple! The num bytes xor is a cheap integrity check which along with other checks in the patcher should catch any booboos.
+
+To help with maintaining patch integrity I defined a couple of macros which help to bound the patch code/data. They use BRASS's relocation capability, which compiles to the current PC but uses a virtual PC for address calculations. Along with a size check and padding for under-sized blocks it makes a nice little feature. You have to specify the patch's address and size as parameters, so there's some manual input, but the benefits are huge. With this in place you can declare labels inside one patch and refer to it in another, which makes table generation and trampolines more readable and safer. 
 
 The first patches were for the VDP IO addresses. Armed with the logging of IO accesses that I put in earlier I could define the [patch data](https://github.com/charlierobson/M5Cheg/blob/master/innout.asm) to modify them. With this in place the remapping hack can be removed from MAME. It's useful to add a warning in the emulator when a wrong IO address is accessed in case any remappings were missed. Some were, so that was a good investment.
 
-BRASS isn't (as far as I know) able to define start addresses for each patch block so I had to use some tricks and a lot of mental math to calculate relative addresses, but this is easy enough if tedious. I'm sure I could come up with something if I thought hard enough. 
-
-One thing I wish I'd done is work out a way to verify the correctness of each block because I got the byte count wrong _a lot_. It was, again, easy enough to correct but tedious. I considered having every patch block in its own separate asm file and then include all the binary output in one master asm file but many patches refer to one another so that would have been its own special pain. It was, however, a useful technique for a couple of patches that required generating offset tables, e.g. [key cap remapping](https://github.com/charlierobson/M5Cheg/blob/master/keycaptable.asm) which was assembled separately then included as a blob.
-
-With the ability to patch the binary off I went! First thing was implementing keyboard reading code that fitted in the address space of the code that I was overwriting. For the most part this was OK, but some patches were larger than the space available to them so required finding a freed-up block of memory and relocating functions appropriately.
+Next up was implementing keyboard reading code that fitted in the address space of the code that I was overwriting. For the most part this is OK as the AY requires a number of IO ops to set up hence produces larger code, but some patches were larger than the space available to them so this required finding a freed-up block of memory and relocating functions appropriately. You'll see that a lot.
 
 Most keyboard routines have a map of codes to keycap characters. For keycaps like SHIFT and ENTER there will be some extended value that represents the string. Setting the high bit of the character code is a common technique, with the low bits representing an index into a table of addresses pointing to the string data. I had to compromise on my chosen strings as the M5 has a lot more keys with extended representations so I had to be creative with descriptions and use techniques such as having a common string for things like SHIFT, which the M5 has 2 of.
 
@@ -200,8 +199,8 @@ Luckily the source binary is less than 16k, and once some bytes are allocated to
 
 Around this time I found that collecting seed wasn't halting the bonus countdown like it was supposed to. So off we go again, looking to see how we can patch the code to make this happen. 
 
-Most patches are in-place replacements but others are wedges - CALLs to routines you've crafted elsewhere in memory. These will contain the patched-out code, plus whatever else is required to make your thing work. This is what you need to do in order to add features or larger fixes. From the top of my head the major features I added were the seed/bonus interaction, bonus countdown tinger, and instruction screen credits.
+Most patches are in-place replacements but others are wedges/trampolines - CALLs to routines you've crafted elsewhere in memory. These will contain the patched-out code, plus whatever else is required to make your thing work. This is what you need to do in order to add features or larger fixes. From the top of my head the major features I added were the seed/bonus interaction, bonus countdown tinger, title music skip, and instruction screen credits.
 
-I hope this has been a fun read even if you didn't get most of my stream of consciousness explanations. I'm a lover not a writer and so if there are any fatal mistakes don't blame me. Lover? Sorry, I meant Logger.
+I hope this has been a fun read even if my stream of consciousness explanations didn't make sense at times. I'm a lover not a writer and so if there are any fatal mistakes don't blame me. Lover? Sorry, I meant duffer.
 
 /Chuck
