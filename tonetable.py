@@ -1,3 +1,7 @@
+# frequencies roughly mapping to the BBC micro's SOUND note numbers / 4
+# 53 = middle C (261.63hz), 53 / 4 = index 13.
+# see BBC user guideor this page https://stardot.org.uk/mirrors/www.bbcdocs.com/filebase/library/pubs/musicmasterclass/bbc_mm_01.htm
+
 freqs = [123.47, 130.81, 138.59, 146.83, 155.56, 164.81, 174.61,
 		185, 196, 207.65, 220, 233.08, 246.94, 261.63, 277.18,
 		293.66, 311.13, 329.63, 349.23, 369.99, 392, 415.3, 440,
@@ -11,5 +15,5 @@ clock=clock_pal
 
 for freq in freqs:
 	val = int((clock/32) / freq)
-
+	# tone value is 10 bits, first byte is low 4 bits and second is upper 6.
 	print("   .byte $" + hex(val & 15) + ", $" + hex(val >> 4))
