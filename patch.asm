@@ -129,11 +129,21 @@ PATCH($89dc, 16)
 ENDPATCH($89dc, 16)
 
 ; version number
-PATCH($89f6, 6)
+PATCH($89ec, 16)
+	.asc	"GILLY     "
 	.byte	0,0
 	.byte	1,3,0,0
-ENDPATCH($89f6, 6)
+ENDPATCH($89ec, 16)
 
+; version number
+PATCH($89fc, 32)
+	.asc	"HERBIE    "
+	.byte	0,0
+	.byte	1,0,0,0
+	.asc	"RILEY     "
+	.byte	0,0
+	.byte	1,0,0,0
+ENDPATCH($89fc, 32)
 
 vBONUSPAUSE = $8158
 fTITLEMUSIC = $8159
