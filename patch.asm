@@ -131,7 +131,7 @@ ENDPATCH($89dc, 16)
 ; version number
 PATCH($89f6, 6)
 	.byte	0,0
-	.byte	1,2,0,0
+	.byte	1,3,0,0
 ENDPATCH($89f6, 6)
 
 

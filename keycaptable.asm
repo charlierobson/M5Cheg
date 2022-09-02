@@ -180,17 +180,18 @@ ENDPATCH($87ec, 227)
 
 
 ; GetKey
-PATCH($8777, 17)
+PATCH($8777, 18)
 	LD		E,$30
 nextkey:
-	CALL	$9a49			; ReadKBRow
-	JR		NZ,$+2+$0e
+	CALL	fREADKBROW
+	JR		NZ,$878c
 	ADD		HL,BC
 	INC		E
 	BIT		3,E
 	JR		Z,nextkey
-	LD		A,0
-ENDPATCH($8777, 17)
+	xor		a
++:
+ENDPATCH($8777, 18)
 
 
 ; SelectKeyboardRow
@@ -201,8 +202,89 @@ ENDPATCH($9a40, 1)
 
 ; ReadKBRow
 PATCH($9a49, 7)
+fREADKBROW:
 	push	bc
 	ld		c,e
 	in		a,(c)
 	pop		bc
 ENDPATCH($9a49, 7)
+
+
+PATCH($9a72, 20)
+_nextKey:
+	LD  	E,(HL)
+	CALL	fREADKBROW
+	INC 	HL
+	AND 	(HL)
+	JR  	Z,{+}
+	CCF
++:	RL		C
+	INC		HL
+	INC		HL
+	DJNZ	_nextKey
+	call	getJSBits
+	ld		a,c
+	or		d
+ENDPATCH($9a72, 20)
+
+
+; R.JOY | R.JOY | R.JOY | R.JOY | L.JOY | L.JOY | L.JOY | L.JOY | 37
+;   v   |  <--  |   ^   |  -->  |   v   |  <--  |   ^   |  -->  |
+
+PATCH($bde0, 40)
+getJSBits:
+	ld		d,0
+	in		a,($37)
+	ld		b,a
+	and		%00100010	; ups
+	jr		z,{+}
+
+	set		4,d
+
++:	ld		a,b
+	and		%10001000	; downs
+	jr		z,{+}
+
+	set		3,d
+
++:	ld		a,b
+	and		%01000100	; lefts
+	jr		z,{+}
+
+	set		2,d
+
++:	ld		a,b
+	and		%00010001	; rights
+	jr		z,{+}
+
+	set		1,d
+
++:	in		a,($31)
+	and		%00110011
+	ret		z
+
+	set		0,d
+	ret
+ENDPATCH($bde0, 40)
+
+PATCH($802d, 5)
+	jp		checkStart
+ENDPATCH($802d, 5)
+
+PATCH($be10, 24)
+checkStart:
+	CP		'S'
+	jp		z,$8032
+	ld		b,a
+
+	in		a,($31)
+	and		%00110011
+	jr		z,{+}
+
+-:	call	fGETKEY
+	jr		nz,{-}
+	jp		$8032
+
++:	ld		a,b
+	JP		$8132
+ENDPATCH($be10, 24)
