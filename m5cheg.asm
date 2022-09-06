@@ -2,7 +2,7 @@
 
     .asciimap ' ',' ',0
 
-    .db     0           ; identifier
+    .db     2           ; identifier
     .dw     start       ; start execution address
     .dw     ipl         ; IPL address
     .db     0,0,0       ; RST 4 jump
